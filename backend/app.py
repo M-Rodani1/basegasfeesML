@@ -26,6 +26,7 @@ def create_app():
                 "http://localhost:3001",
                 "https://*.vercel.app",
                 "https://*.netlify.app",
+                "https://basegasfeesml.netlify.app",
                 "https://basegasfeesoptimiser.netlify.app",
                 os.getenv('FRONTEND_URL', '*')
             ],
