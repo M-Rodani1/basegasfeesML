@@ -59,12 +59,27 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
             }
           }
 
-          setHourlyStats(stats);
+          // Check if stats are valid (not all zeros)
+          const hasValidData = stats.length > 0 && stats.some(s => s.avgGas > 0);
+
+          if (hasValidData) {
+            console.log('Using API data:', stats.length, 'hours');
+            setHourlyStats(stats);
+          } else {
+            console.warn('API data is empty or all zeros, using fallback');
+            setHourlyStats(getFallbackStats());
+          }
+        } else {
+          // No data returned, use fallback
+          console.warn('No historical data returned from API, using fallback');
+          setHourlyStats(getFallbackStats());
         }
       } catch (error) {
         console.error('Failed to calculate hourly stats:', error);
         // Use fallback data based on analysis
-        setHourlyStats(getFallbackStats());
+        const fallbackStats = getFallbackStats();
+        setHourlyStats(fallbackStats);
+        console.log('Using fallback stats:', fallbackStats);
       } finally {
         setLoading(false);
       }
