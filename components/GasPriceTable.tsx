@@ -11,7 +11,7 @@ const GasPriceTable: React.FC = () => {
   const loadData = async () => {
     try {
       setError(null);
-      const data = await fetchTransactions(10);
+      const data = await fetchTransactions(5);
       setTransactions(data);
     } catch (err) {
       console.error('Error loading transactions:', err);

@@ -56,46 +56,41 @@ const GasLeaderboard: React.FC = () => {
   if (!currentGas) return null;
 
   return (
-    <div className="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg h-full">
-      <h2 className="text-xl font-semibold text-gray-200 mb-4">Base Network Gas</h2>
-      
-      <div className="space-y-4">
+    <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+      <h2 className="text-lg font-semibold text-gray-200 mb-3">Base Network Gas</h2>
+
+      <div className="space-y-2">
         {/* Current Gas Price */}
-        <div className="bg-gradient-to-br from-cyan-600/20 to-cyan-800/20 p-4 rounded-lg border border-cyan-500/30">
-          <div className="text-sm text-gray-400 mb-1">Current Gas Price</div>
-          <div className="text-3xl font-bold text-cyan-400">
+        <div className="bg-gradient-to-br from-cyan-600/20 to-cyan-800/20 p-3 rounded-lg border border-cyan-500/30">
+          <div className="text-xs text-gray-400 mb-1">Current Gas Price</div>
+          <div className="text-2xl font-bold text-cyan-400">
             {currentGas.current_gas.toFixed(4)}
-            <span className="text-lg text-gray-400 ml-2">Gwei</span>
+            <span className="text-sm text-gray-400 ml-1">Gwei</span>
           </div>
         </div>
 
         {/* Base Fee */}
-        <div className="bg-gray-700/50 p-3 rounded-md">
-          <div className="text-sm text-gray-400">Base Fee</div>
-          <div className="text-xl font-semibold text-gray-100">
+        <div className="bg-gray-700/50 p-2 rounded-md">
+          <div className="text-xs text-gray-400">Base Fee</div>
+          <div className="text-lg font-semibold text-gray-100">
             {currentGas.base_fee.toFixed(4)} Gwei
           </div>
         </div>
 
         {/* Priority Fee */}
-        <div className="bg-gray-700/50 p-3 rounded-md">
-          <div className="text-sm text-gray-400">Priority Fee</div>
-          <div className="text-xl font-semibold text-gray-100">
+        <div className="bg-gray-700/50 p-2 rounded-md">
+          <div className="text-xs text-gray-400">Priority Fee</div>
+          <div className="text-lg font-semibold text-gray-100">
             {currentGas.priority_fee.toFixed(4)} Gwei
           </div>
         </div>
 
         {/* Latest Block */}
-        <div className="bg-gray-700/50 p-3 rounded-md">
-          <div className="text-sm text-gray-400">Latest Block</div>
-          <div className="text-lg font-mono text-gray-100">
+        <div className="bg-gray-700/50 p-2 rounded-md">
+          <div className="text-xs text-gray-400">Latest Block</div>
+          <div className="text-sm font-mono text-gray-100">
             #{currentGas.block_number.toLocaleString()}
           </div>
-        </div>
-
-        {/* Last Updated */}
-        <div className="text-xs text-gray-500 text-center">
-          Updated: {new Date(currentGas.timestamp).toLocaleTimeString()}
         </div>
       </div>
     </div>
