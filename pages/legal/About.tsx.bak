@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// Logo removed
+import { Logo } from '../../components/branding/Logo';
 
 const About: React.FC = () => {
   return (
