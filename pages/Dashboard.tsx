@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Logo from '../components/branding/Logo';
 import BestTimeWidget from '../components/BestTimeWidget';
 import RelativePriceIndicator from '../components/RelativePriceIndicator';
+import GasPriceGraph from '../components/GasPriceGraph';
 
 const Dashboard: React.FC = () => {
   const [currentGas, setCurrentGas] = useState<number | null>(null);
@@ -85,6 +86,14 @@ const Dashboard: React.FC = () => {
           {/* Best Time Widget */}
           <div className="mb-6">
             <BestTimeWidget currentGas={currentGas || 0} />
+          </div>
+
+          {/* Historical Gas Price Graph */}
+          <div className="mb-6">
+            <div className="bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-700">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Historical Gas Prices (24h)</h2>
+              <GasPriceGraph />
+            </div>
           </div>
 
           {/* Info Cards */}
