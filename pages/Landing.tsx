@@ -12,7 +12,7 @@ const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Logo />
-            <span className="text-xl font-bold text-white">Base Gas Optimizer</span>
+            <span className="text-xl font-bold text-white">Base Gas Optimiser</span>
           </div>
           
           <div className="hidden md:flex items-center space-x-8">
@@ -134,7 +134,7 @@ const Landing: React.FC = () => {
             {[
               {
                 step: "1",
-                title: "AI Analyzes",
+                title: "AI Analyses",
                 desc: "Our ML model processes 30 days of Base network data to identify gas price patterns",
                 icon: "🤖"
               },
@@ -244,7 +244,7 @@ const Landing: React.FC = () => {
                 avatar: "🧑"
               },
               {
-                quote: "Finally, a gas optimizer that's accurate. 65% savings on every swap!",
+                quote: "Finally, a gas optimiser that's accurate. 65% savings on every swap!",
                 author: "Sarah Martinez",
                 role: "NFT Creator",
                 avatar: "👩"
@@ -446,10 +446,10 @@ const Landing: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Logo />
-              <span className="text-lg font-bold text-white">Base Gas Optimizer</span>
+              <span className="text-lg font-bold text-white">Base Gas Optimiser</span>
             </div>
             <p className="text-gray-400 mt-4 text-sm">
-              AI-powered gas optimization for Base network
+              AI-powered gas optimisation for Base network
             </p>
             <div className="flex space-x-4 mt-4">
               <a href="#" className="text-gray-400 hover:text-cyan-400">🐦 Twitter</a>
@@ -491,7 +491,7 @@ const Landing: React.FC = () => {
         
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 Base Gas Optimizer. All rights reserved.
+            © 2024 Base Gas Optimiser. All rights reserved.
           </p>
           
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
