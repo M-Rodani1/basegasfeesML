@@ -126,14 +126,50 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
   const savingsVsHigh = hourlyAverage > 0 ?
     Math.round(((hourlyAverage * 1.5 - currentGas) / (hourlyAverage * 1.5)) * 100) : 0;
 
+  // Map colors to actual Tailwind classes
+  const colorClasses = {
+    green: {
+      border: 'border-green-500/30',
+      text: 'text-green-400',
+      bg: 'bg-green-500/10',
+      borderFull: 'border-green-500/30'
+    },
+    cyan: {
+      border: 'border-cyan-500/30',
+      text: 'text-cyan-400',
+      bg: 'bg-cyan-500/10',
+      borderFull: 'border-cyan-500/30'
+    },
+    yellow: {
+      border: 'border-yellow-500/30',
+      text: 'text-yellow-400',
+      bg: 'bg-yellow-500/10',
+      borderFull: 'border-yellow-500/30'
+    },
+    orange: {
+      border: 'border-orange-500/30',
+      text: 'text-orange-400',
+      bg: 'bg-orange-500/10',
+      borderFull: 'border-orange-500/30'
+    },
+    red: {
+      border: 'border-red-500/30',
+      text: 'text-red-400',
+      bg: 'bg-red-500/10',
+      borderFull: 'border-red-500/30'
+    }
+  };
+
+  const colors = colorClasses[status.color as keyof typeof colorClasses] || colorClasses.yellow;
+
   return (
-    <div className={`bg-gradient-to-br from-gray-800 to-gray-900 p-4 sm:p-6 rounded-lg shadow-lg border-2 border-${status.color}-500/30 ${className}`}>
+    <div className={`bg-gradient-to-br from-gray-800 to-gray-900 p-4 sm:p-6 rounded-lg shadow-lg border-2 ${colors.border} ${className}`}>
       {/* Status Indicator */}
       <div className="text-center mb-4">
         <div className="text-6xl sm:text-7xl mb-3 animate-pulse">
           {status.emoji}
         </div>
-        <div className={`text-xl sm:text-2xl font-bold text-${status.color}-400 mb-2`}>
+        <div className={`text-xl sm:text-2xl font-bold ${colors.text} mb-2`}>
           {status.level} Time to Transact
         </div>
         <div className="text-sm sm:text-base text-gray-400">
@@ -170,11 +206,11 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
       </div>
 
       {/* Action Recommendation */}
-      <div className={`p-3 rounded-lg bg-${status.color}-500/10 border border-${status.color}-500/30`}>
+      <div className={`p-3 rounded-lg ${colors.bg} border ${colors.borderFull}`}>
         <div className="flex items-start gap-2">
           <span className="text-lg flex-shrink-0">{status.emoji}</span>
           <div className="flex-1 min-w-0">
-            <div className={`text-xs sm:text-sm font-semibold text-${status.color}-400 mb-1`}>
+            <div className={`text-xs sm:text-sm font-semibold ${colors.text} mb-1`}>
               Recommendation
             </div>
             <div className="text-xs sm:text-sm text-gray-300">

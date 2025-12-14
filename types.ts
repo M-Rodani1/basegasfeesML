@@ -5,6 +5,12 @@ export interface GraphDataPoint {
   time: string;
   gwei?: number;
   predictedGwei?: number;
+  lowerBound?: number;
+  upperBound?: number;
+  confidence?: number;
+  confidenceLevel?: 'high' | 'medium' | 'low';
+  confidenceEmoji?: string;
+  confidenceColor?: string;
 }
 
 // Current gas data from backend

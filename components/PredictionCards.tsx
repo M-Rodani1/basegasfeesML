@@ -289,25 +289,35 @@ const PredictionCards: React.FC = () => {
           </div>
 
           {/* Confidence indicator */}
-          {card.confidence !== undefined && (
-            <div className={`bg-${card.confidenceColor}-500/10 border border-${card.confidenceColor}-500/30 rounded-md p-3 mb-4`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`text-${card.confidenceColor}-400 font-medium text-sm`}>
-                    {card.confidenceLevel?.toUpperCase()} CONFIDENCE
+          {card.confidence !== undefined && (() => {
+            const confColors = {
+              green: {bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', textLight: 'text-green-300'},
+              cyan: {bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', textLight: 'text-cyan-300'},
+              yellow: {bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', textLight: 'text-yellow-300'},
+              orange: {bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', textLight: 'text-orange-300'},
+              red: {bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', textLight: 'text-red-300'}
+            };
+            const confClass = confColors[card.confidenceColor as keyof typeof confColors] || confColors.yellow;
+            return (
+              <div className={`${confClass.bg} border ${confClass.border} rounded-md p-3 mb-4`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`${confClass.text} font-medium text-sm`}>
+                      {card.confidenceLevel?.toUpperCase()} CONFIDENCE
+                    </span>
+                  </div>
+                  <span className={`${confClass.text} font-bold`}>
+                    {(card.confidence * 100).toFixed(0)}%
                   </span>
                 </div>
-                <span className={`text-${card.confidenceColor}-400 font-bold`}>
-                  {(card.confidence * 100).toFixed(0)}%
-                </span>
+                <p className={`text-xs ${confClass.textLight} mt-2`}>
+                  {card.confidenceLevel === 'high' && "Models strongly agree on this prediction"}
+                  {card.confidenceLevel === 'medium' && "Moderate agreement between models"}
+                  {card.confidenceLevel === 'low' && "High uncertainty - models disagree"}
+                </p>
               </div>
-              <p className={`text-xs text-${card.confidenceColor}-300 mt-2`}>
-                {card.confidenceLevel === 'high' && "Models strongly agree on this prediction"}
-                {card.confidenceLevel === 'medium' && "Moderate agreement between models"}
-                {card.confidenceLevel === 'low' && "High uncertainty - models disagree"}
-              </p>
-            </div>
-          )}
+            );
+          })()}
 
           <div className="mt-4 pt-4 border-t border-gray-700">
             <p className="text-sm text-gray-300 leading-relaxed mb-3">{card.recommendation}</p>

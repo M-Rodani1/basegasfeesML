@@ -30,16 +30,7 @@ export const BASE_TESTNET = {
   blockExplorerUrls: ['https://sepolia.basescan.org'],
 };
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
-      on: (event: string, callback: (...args: any[]) => void) => void;
-      removeListener: (event: string, callback: (...args: any[]) => void) => void;
-    };
-  }
-}
+// Window.ethereum type is defined in wallet.ts
 
 /**
  * Connect to Base network using client-side JavaScript
