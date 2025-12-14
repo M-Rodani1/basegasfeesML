@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// Logo removed
 
 const Docs: React.FC = () => {
   return (
@@ -10,7 +9,6 @@ const Docs: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
-              <Logo />
               <span className="text-lg sm:text-xl font-bold text-white">Base Gas Optimiser</span>
             </Link>
             <Link to="/app" className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-lg font-semibold hover:shadow-lg transition">
