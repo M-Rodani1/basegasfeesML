@@ -6,7 +6,7 @@
 
 ## Live URLs
 
-- **Frontend**: https://basegasfeesoptimiser.netlify.app
+- **Frontend**: https://basegasfeesml.netlify.app
 - **Backend API**: https://basegasfeesprediction.onrender.com
 - **Config Endpoint**: https://basegasfeesprediction.onrender.com/config.json
 - **GitHub Repository**: https://github.com/M-Rodani1/basegasfeesML
