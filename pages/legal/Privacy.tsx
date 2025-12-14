@@ -1,13 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// Logo removed
 
 const Privacy: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center space-x-2 mb-8">
-          <Logo />
           <Link to="/" className="text-xl font-bold text-white hover:text-cyan-400 transition">
             Base Gas Optimizer
           </Link>
