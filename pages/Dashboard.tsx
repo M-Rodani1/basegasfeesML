@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/branding/Logo';
-import RelativePriceIndicator from '../components/RelativePriceIndicator';
-import BestTimeWidget from '../components/BestTimeWidget';
-import HourlyHeatmap from '../components/HourlyHeatmap';
-import GasPriceGraph from '../components/GasPriceGraph';
-import { fetchCurrentGas } from '../src/api/gasApi';
 
 const Dashboard: React.FC = () => {
   const [currentGas, setCurrentGas] = useState<number | null>(null);
@@ -78,31 +73,6 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Relative Price Indicator */}
-          {currentGas !== null && !error && (
-            <div className="mb-6">
-              <RelativePriceIndicator currentGas={currentGas} />
-            </div>
-          )}
-
-          {/* Best Time Widget */}
-          <div className="mb-6">
-            <BestTimeWidget currentGas={currentGas || 0} />
-          </div>
-
-          {/* Hourly Heatmap */}
-          <div className="mb-6">
-            <HourlyHeatmap />
-          </div>
-
-          {/* Historical Gas Price Graph */}
-          <div className="mb-6">
-            <div className="bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-700">
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Historical Gas Prices</h2>
-              <GasPriceGraph />
-            </div>
-          </div>
-
           {/* Info Cards */}
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-6">
             <div className="bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-700">
@@ -119,6 +89,31 @@ const Dashboard: React.FC = () => {
               <div className="text-3xl sm:text-4xl mb-3">💰</div>
               <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Save Money</h3>
               <p className="text-sm text-gray-400">Users save up to 40% on transaction costs by timing smartly</p>
+            </div>
+          </div>
+
+          {/* Coming Soon */}
+          <div className="bg-gray-800 rounded-lg p-6 sm:p-8 text-center border border-gray-700">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Advanced Features</h2>
+            <p className="text-sm sm:text-base text-gray-400 mb-6">
+              More analytics and prediction features coming soon! Currently showing real-time Base gas prices.
+            </p>
+            <div className="grid md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-gray-900 p-4 sm:p-6 rounded-lg">
+                <div className="text-3xl sm:text-4xl mb-2">🚦</div>
+                <h3 className="text-sm sm:text-base font-bold mb-2">Price Indicator</h3>
+                <p className="text-xs text-gray-400">In development</p>
+              </div>
+              <div className="bg-gray-900 p-4 sm:p-6 rounded-lg">
+                <div className="text-3xl sm:text-4xl mb-2">🗓️</div>
+                <h3 className="text-sm sm:text-base font-bold mb-2">24-Hour Heatmap</h3>
+                <p className="text-xs text-gray-400">In development</p>
+              </div>
+              <div className="bg-gray-900 p-4 sm:p-6 rounded-lg">
+                <div className="text-3xl sm:text-4xl mb-2">📊</div>
+                <h3 className="text-sm sm:text-base font-bold mb-2">Historical Charts</h3>
+                <p className="text-xs text-gray-400">In development</p>
+              </div>
             </div>
           </div>
         </main>
