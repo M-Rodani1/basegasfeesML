@@ -824,10 +824,10 @@ FINAL POLISH (Hour 94-96):
 Gas fees are invisible taxes on blockchain users. Most people pay without thinking, overpaying by 40-60% simply because they don't know better. We give users the information they need to make smart decisions.
 
 **Our Impact:**
-- 💰 **Individual savings**: Up to 60% reduction in gas fees for active users
-- 🌍 **Network efficiency**: Distributes transaction load, reduces congestion
-- 📈 **Ecosystem growth**: Makes Base more attractive vs. competing L2s
-- 🎯 **Accessibility**: Brings data-driven gas optimisation to everyone, not just power users
+-  **Individual savings**: Up to 60% reduction in gas fees for active users
+-  **Network efficiency**: Distributes transaction load, reduces congestion
+-  **Ecosystem growth**: Makes Base more attractive vs. competing L2s
+-  **Accessibility**: Brings data-driven gas optimisation to everyone, not just power users
 
 **What Makes Us Different:**
 - ✅ **ML-powered predictions** - not just historical averages
@@ -837,10 +837,10 @@ Gas fees are invisible taxes on blockchain users. Most people pay without thinki
 - ✅ **Production-ready** - live dashboard with real users, not a prototype
 
 **Live Now:**
-- 🌐 **Dashboard**: https://basegasfeesml.netlify.app
-- 🔌 **API**: https://basegasfeesml.onrender.com/api
-- 💻 **GitHub**: github.com/M-Rodani1/basegasfeesML
-- 📚 **Documentation**: Full API docs and integration guides available
+-  **Dashboard**: https://basegasfeesml.netlify.app
+-  **API**: https://basegasfeesml.onrender.com/api
+-  **GitHub**: github.com/M-Rodani1/basegasfeesML
+-  **Documentation**: Full API docs and integration guides available
 
 **Our Vision:**
 
@@ -848,59 +848,10 @@ In the near future, **every Base transaction happens at the optimal time**. User
 
 Gas optimisation should be automatic, accessible, and algorithmic. We're making that vision a reality.
 
-**Thank you for your time!**
+**Thank you for your watching!**
 
-We're excited about the potential of Base Gas Optimiser to improve the Base ecosystem. Questions?
+We're excited about the potential of Base Gas Optimiser to improve the Base ecosystem. 
 
 ---
 
-## APPENDIX: TECHNICAL DETAILS
 
-**Model Performance Deep Dive:**
-```
-METRIC BREAKDOWN:
-├── Directional Accuracy: 59.83%
-│   └── Meaning: Predicts up/down correctly 6 out of 10 times
-│
-├── Mean Absolute Error: 0.000275 gwei
-│   └── Meaning: Predictions off by ~0.0003 gwei on average
-│
-├── R² Score: 7.09%
-│   └── Meaning: Explains 7% of variance (low but expected)
-│
-└── Confidence Calibration: 92%
-    └── Meaning: High-confidence predictions right 92% of time
-```
-
-**Infrastructure Specifications:**
-```
-BACKEND:
-├── Server: Render (Cloud hosting)
-├── Region: US-East
-├── Memory: 512MB
-├── CPU: Shared
-└── Database: PostgreSQL 14
-
-FRONTEND:
-├── Hosting: Netlify
-├── CDN: Global edge network
-├── Build: Vite 6.4.1
-└── Deploy: Automatic on git push
-
-API PERFORMANCE:
-├── Response time: <200ms (p95)
-├── Uptime: 99.9%
-├── Rate limit: 200 requests/day (public)
-└── Caching: In-memory + Redis
-```
-
-**Open Source Contributions Welcome:**
-- 🐛 Bug reports and issues
-- 💡 Feature suggestions
-- 🔧 Pull requests for improvements
-- 📝 Documentation improvements
-- 🌍 Translations (future)
-
-**Contact:**
-- GitHub: github.com/M-Rodani1/basegasfeesML
-- Issues: github.com/M-Rodani1/basegasfeesML/issues
