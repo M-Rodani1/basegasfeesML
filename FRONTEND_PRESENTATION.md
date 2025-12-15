@@ -1,11 +1,11 @@
-# Base Gas Optimizer - Frontend Presentation
+# Base Gas Optimiser - Frontend Presentation
 **Presenter:** Frontend Developer
 
 ---
 
 ## INTRODUCTION
 
-Hi! I'm senan, and I built the frontend for Base Gas Optimizer. I'm going to show you how we created a real-time, mobile-first dashboard that helps Base users save money on gas fees.
+Hi! I'm senan, and I built the frontend for Base Gas Optimiser. I'm going to show you how we created a real-time, mobile-first dashboard that helps Base users save money on gas fees.
 
 Frontend folder structure:
 ```
@@ -218,7 +218,7 @@ useEffect(() => {
    Save up to 60% by timing transactions
 ```
 
-We analyze 168 hours of historical data, group by UTC hour, and show the cheapest 3 hours on the left and most expensive 3 on the right. Users can plan their transactions around these patterns.
+We analyse 168 hours of historical data, group by UTC hour, and show the cheapest 3 hours on the left and most expensive 3 on the right. Users can plan their transactions around these patterns.
 
 ---
 
@@ -533,7 +533,7 @@ Text scales from `text-sm` on mobile to `text-2xl` on desktop. Padding adjusts. 
 
 ## BUILD & DEPLOYMENT
 
-Built with Vite for instant hot reload during development. Production build optimizes chunks, tree-shakes unused code, and copies the PWA manifest for offline support.
+Built with Vite for instant hot reload during development. Production build optimises chunks, tree-shakes unused code, and copies the PWA manifest for offline support.
 
 Vite config (`frontend/vite.config.ts`):
 ```typescript

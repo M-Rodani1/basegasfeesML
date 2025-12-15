@@ -1,4 +1,4 @@
-# Base Gas Optimizer - Pitch Presentation
+# Base Gas Optimiser - Pitch Presentation
 **Project Pitch Video**
 
 ---
@@ -24,7 +24,7 @@ What if there was a way to predict these patterns and save money on every transa
 
 ## OUR SOLUTION
 
-That's where Base Gas Optimizer comes in. We built an AI-powered platform that predicts Base network gas prices and tells users the BEST time to transact.
+That's where Base Gas Optimiser comes in. We built an AI-powered platform that predicts Base network gas prices and tells users the BEST time to transact.
 
 **THREE CORE FEATURES:**
 
@@ -48,7 +48,7 @@ Real-time visual feedback. Users instantly know if NOW is a good time to transac
 └──────────────────┴──────────────────┘
 ```
 
-Historical pattern analysis. We analyzed thousands of Base transactions to find the cheapest and most expensive hours. Users can plan ahead.
+Historical pattern analysis. We analysed thousands of Base transactions to find the cheapest and most expensive hours. Users can plan ahead.
 
 **3. ML-Powered Predictions**
 ```
@@ -138,7 +138,7 @@ Option A: Transact at peak times (9pm average)
 ├── 10 transactions/week
 └── Monthly cost: ~$X
 
-Option B: Use Base Gas Optimizer (3am average)
+Option B: Use Base Gas Optimiser (3am average)
 ├── Gas price: 0.0017 gwei
 ├── 10 transactions/week
 └── Monthly cost: ~$Y
@@ -300,7 +300,7 @@ All our code is open source on GitHub. We believe in building in public.
 💻 GitHub: github.com/M-Rodani1/basegasfeesML
 ```
 
-Base Gas Optimizer is live RIGHT NOW. Visit **basegasfeesml.netlify.app** and start saving on gas fees today.
+Base Gas Optimiser is live RIGHT NOW. Visit **basegasfeesml.netlify.app** and start saving on gas fees today.
 
 Connect your MetaMask wallet, see real-time predictions, and never overpay for gas again.
 
@@ -318,7 +318,7 @@ Result: More efficient Base network for all
 
 Our vision? Make the Base network more efficient for everyone. When users transact at optimal times, the network benefits too - less congestion during peaks, more distributed usage.
 
-Built in 4 days for the Base Gas Optimizer hackathon. We're excited to keep building and making Base transactions cheaper for millions of users.
+Built in 4 days for the Base Gas Optimiser hackathon. We're excited to keep building and making Base transactions cheaper for millions of users.
 
 **Thank you!**
 
