@@ -1,11 +1,11 @@
-# Base Gas Optimizer - Backend Presentation
+# Base Gas Optimiser - Backend Presentation
 **Presenter:** Mohamed (Backend & ML Developer)
 
 ---
 
 ## INTRODUCTION
 
-Hi! I'm Mohamed, and I handled the backend and ML for Base Gas Optimizer. I'm going to walk you through how we built the prediction engine that powers this tool.
+Hi! I'm Mohamed, and I handled the backend and ML for Base Gas Optimiser. I'm going to walk you through how we built the prediction engine that powers this tool.
 
 Backend folder structure:
 ```
@@ -130,7 +130,7 @@ def cached(ttl=300):
     return decorator
 ```
 
-My solution: Two-tier data system. For real-time current gas, we use live RPC with aggressive caching - only fetching every 30 seconds. For historical patterns, I analyzed data offline and created a pattern-based system that shows typical cheapest/expensive hours without hammering the API.
+My solution: Two-tier data system. For real-time current gas, we use live RPC with aggressive caching - only fetching every 30 seconds. For historical patterns, I analysed data offline and created a pattern-based system that shows typical cheapest/expensive hours without hammering the API.
 
 This way, the dashboard ALWAYS works, even if we're rate-limited.
 
@@ -506,7 +506,7 @@ One: RPC rate limiting. Solved with caching and pattern-based fallbacks.
 
 Two: Model accuracy. Took 2 days of feature engineering to get from 23% to 70%.
 
-Three: Real-time performance. Had to optimize feature calculation to generate predictions in under 1 second.
+Three: Real-time performance. Had to optimise feature calculation to generate predictions in under 1 second.
 
 ---
 
