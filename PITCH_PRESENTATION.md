@@ -5,11 +5,7 @@
 
 ## THE PROBLEM
 
-**SHOW:** Base network transaction screen with high gas fees
-
 Every day, millions of transactions happen on Base network. Users pay gas fees without knowing if they're overpaying.
-
-**SHOW:** Example transaction showing 0.0045 gwei vs 0.0017 gwei
 
 The problem? Gas prices on Base fluctuate wildly - sometimes 2-3x higher depending on the time of day. Most users don't know when to transact, so they pay whatever the current price is.
 
@@ -28,8 +24,6 @@ What if there was a way to predict these patterns and save money on every transa
 
 ## OUR SOLUTION
 
-**SHOW:** Base Gas Optimizer dashboard landing page
-
 That's where Base Gas Optimizer comes in. We built an AI-powered platform that predicts Base network gas prices and tells users the BEST time to transact.
 
 **THREE CORE FEATURES:**
@@ -40,8 +34,6 @@ That's where Base Gas Optimizer comes in. We built an AI-powered platform that p
 🟡 Yellow: Gas near average     → Typical pricing
 🔴 Red:    Gas 50% above average → WAIT if possible
 ```
-
-**SHOW:** Traffic light widget changing colors
 
 Real-time visual feedback. Users instantly know if NOW is a good time to transact.
 
@@ -56,8 +48,6 @@ Real-time visual feedback. Users instantly know if NOW is a good time to transac
 └──────────────────┴──────────────────┘
 ```
 
-**SHOW:** Best times widget
-
 Historical pattern analysis. We analyzed thousands of Base transactions to find the cheapest and most expensive hours. Users can plan ahead.
 
 **3. ML-Powered Predictions**
@@ -69,21 +59,17 @@ Historical pattern analysis. We analyzed thousands of Base transactions to find 
 Recommendation: Gas expected to rise. Transact now to save.
 ```
 
-**SHOW:** Prediction cards with confidence levels
-
 Machine learning predicts gas prices 1 hour, 4 hours, and 24 hours ahead - with confidence levels so users know how certain the predictions are.
 
 ---
 
 ## HOW IT WORKS
 
-**SHOW:** System architecture diagram or flow
-
 Our platform has three layers:
 
 **LAYER 1: DATA COLLECTION**
 
-**SHOW:** Code snippet of Base RPC integration
+Base RPC integration:
 ```python
 # Fetch live gas from Base network
 latest_block = self.w3.eth.get_block('latest')
@@ -101,7 +87,7 @@ We collect live gas price data directly from the Base blockchain via RPC. Every 
 
 **LAYER 2: MACHINE LEARNING**
 
-**SHOW:** Feature engineering code
+Feature engineering:
 ```python
 # 20+ engineered features from raw gas data
 - Lag features: gas price 1h, 4h, 24h ago
@@ -116,7 +102,7 @@ We don't just look at raw gas prices. We engineered over 20 features from the da
 - **Time patterns**: Cyclical encoding of hour and day
 - **Technical indicators**: Borrowed from trading - RSI, MACD
 
-**SHOW:** Model performance metrics
+Model performance metrics:
 ```
 Model Performance:
 ├── Directional Accuracy: 59.83%
@@ -129,8 +115,6 @@ The result? **59.83% directional accuracy** - we correctly predict whether gas w
 
 **LAYER 3: REAL-TIME DASHBOARD**
 
-**SHOW:** Live dashboard with auto-refresh
-
 Frontend built with React 19 + TypeScript. Everything updates automatically every 30 seconds:
 - Current gas prices from live Base RPC
 - ML predictions with confidence ranges
@@ -142,8 +126,6 @@ Frontend built with React 19 + TypeScript. Everything updates automatically ever
 ---
 
 ## THE IMPACT
-
-**SHOW:** Savings calculator or comparison
 
 Let's talk about real savings.
 
@@ -168,7 +150,6 @@ For a user making 10 transactions per week, timing their transactions during off
 
 **WHO BENEFITS?**
 
-**SHOW:** Target users
 ```
 ✅ DeFi traders - Making multiple swaps daily
 ✅ NFT collectors - Minting during optimal times
@@ -181,19 +162,17 @@ For a user making 10 transactions per week, timing their transactions during off
 - **DAOs** batching transactions during cheap hours
 - **Any Base user** who wants to save money
 
-**SHOW:** Live dashboard with wallet integration
-
 We integrated MetaMask so users can connect their wallet, see their potential savings, and execute transactions at the right time.
 
 ---
 
 ## TECHNICAL ACHIEVEMENTS
 
-**SHOW:** Code or tech stack visualization
-
 What makes this technically impressive?
 
 **1. REAL-TIME BLOCKCHAIN DATA**
+
+Direct Base RPC integration:
 ```typescript
 // Direct Base RPC integration
 const response = await fetch('https://mainnet.base.org', {
@@ -216,6 +195,8 @@ BASE_RPC_URLS = [
 We fetch live data directly from Base blockchain - no third-party APIs needed. With automatic failover to backup RPCs.
 
 **2. PRODUCTION-GRADE ML PIPELINE**
+
+Time-series cross-validation:
 ```python
 # Time-series cross-validation
 X_train, X_test = train_test_split(
@@ -235,6 +216,8 @@ models = [
 Proper time-series cross-validation (no data leakage), ensemble modeling, and production deployment on Render.
 
 **3. MOBILE-FIRST, RESPONSIVE DESIGN**
+
+Responsive Tailwind classes:
 ```typescript
 // Tailwind responsive classes
 className="text-6xl sm:text-7xl lg:text-8xl"  // Scales with screen
@@ -245,6 +228,8 @@ className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3"  // Responsive grids
 Every component adapts to screen size. 44px minimum touch targets for accessibility.
 
 **4. SUB-200MS API RESPONSE TIME**
+
+Caching configuration:
 ```python
 CACHE_CONFIG = {
     'current': 30,      # 30 seconds
@@ -260,8 +245,6 @@ Aggressive caching strategy ensures predictions load instantly.
 ---
 
 ## WHAT'S NEXT
-
-**SHOW:** Roadmap or future features
 
 This is just the beginning. Here's what we're building next:
 
@@ -289,9 +272,9 @@ This is just the beginning. Here's what we're building next:
 **4. Telegram/Discord Bots** - Get predictions without leaving your chat
 **5. Smart Contract Integration** - Auto-execute transactions when gas drops
 
-**SHOW:** GitHub repository
-
 **OPEN SOURCE**
+
+Repository information:
 ```
 Repository: github.com/M-Rodani1/basegasfeesML
 Tech Stack:
@@ -309,9 +292,8 @@ All our code is open source on GitHub. We believe in building in public.
 
 ## THE CALL TO ACTION
 
-**SHOW:** Live dashboard URL
-
 **TRY IT NOW:**
+
 ```
 🌐 Dashboard: https://basegasfeesml.netlify.app
 🔌 API: https://basegasfeesml.onrender.com/api
@@ -319,8 +301,6 @@ All our code is open source on GitHub. We believe in building in public.
 ```
 
 Base Gas Optimizer is live RIGHT NOW. Visit **basegasfeesml.netlify.app** and start saving on gas fees today.
-
-**SHOW:** Dashboard with traffic light, predictions, and best times
 
 Connect your MetaMask wallet, see real-time predictions, and never overpay for gas again.
 
@@ -337,8 +317,6 @@ Result: More efficient Base network for all
 ```
 
 Our vision? Make the Base network more efficient for everyone. When users transact at optimal times, the network benefits too - less congestion during peaks, more distributed usage.
-
-**SHOW:** Team or thank you slide
 
 Built in 4 days for the Base Gas Optimizer hackathon. We're excited to keep building and making Base transactions cheaper for millions of users.
 

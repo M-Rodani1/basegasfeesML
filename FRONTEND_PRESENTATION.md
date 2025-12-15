@@ -7,7 +7,7 @@
 
 Hi! I'm senan, and I built the frontend for Base Gas Optimizer. I'm going to show you how we created a real-time, mobile-first dashboard that helps Base users save money on gas fees.
 
-**SHOW:** Frontend folder structure
+Frontend folder structure:
 ```
 frontend/
 ├── components/       # React components
@@ -37,7 +37,7 @@ This is a React 19 + TypeScript frontend built with Vite, deployed on Netlify. W
 
 The centerpiece is our traffic light gas indicator. It compares current gas prices to historical averages and tells you if NOW is a good time to transact.
 
-**SHOW:** Traffic light logic from `frontend/components/RelativePriceIndicator.tsx`
+Traffic light logic (`frontend/components/RelativePriceIndicator.tsx`):
 ```typescript
 const getPriceLevel = (current: number, avg: number): PriceLevel => {
   const ratio = current / avg;
@@ -103,7 +103,7 @@ Five levels: Green means gas is 30% below average - transact now! Red means it's
 
 It updates every 5 minutes, comparing current gas to both the hourly average and 24-hour average. Users get instant, actionable advice.
 
-**SHOW:** Real-time update code from `frontend/components/RelativePriceIndicator.tsx`
+Real-time update code (`frontend/components/RelativePriceIndicator.tsx`):
 ```typescript
 useEffect(() => {
   const fetchAverages = async () => {
@@ -166,7 +166,7 @@ The component fetches historical data, groups by hour, calculates averages, and 
 
 We also show the best and worst times to transact based on Base network patterns.
 
-**SHOW:** Best time widget code from `frontend/components/BestTimeWidget.tsx`
+Best time widget code (`frontend/components/BestTimeWidget.tsx`):
 ```typescript
 useEffect(() => {
   const fetchData = async () => {
@@ -226,7 +226,7 @@ We analyze 168 hours of historical data, group by UTC hour, and show the cheapes
 
 But the real power is in the ML predictions - 1 hour, 4 hours, and 24 hours ahead.
 
-**SHOW:** Prediction cards code from `frontend/components/PredictionCards.tsx`
+Prediction cards code (`frontend/components/PredictionCards.tsx`):
 ```typescript
 // Determine recommendation based on prediction vs current
 if (predicted < current * 0.9) {
@@ -258,7 +258,7 @@ if (predicted < current * 0.9) {
 
 Each prediction shows confidence level - High, Medium, or Low - based on the ML model's certainty. We also show a visual range slider indicating best-case to worst-case scenarios, so users understand the uncertainty.
 
-**SHOW:** Range slider visualization code
+Range slider visualization code
 ```typescript
 {/* Visual Range Slider */}
 <div className="mt-3">
@@ -319,7 +319,7 @@ The range slider makes ML predictions understandable. Users see the predicted va
 
 We integrated MetaMask for wallet connection, with automatic Base network detection and switching.
 
-**SHOW:** Wallet connection code from `frontend/src/utils/wallet.ts`
+Wallet connection code (`frontend/src/utils/wallet.ts`):
 ```typescript
 export async function connectWallet(): Promise<string> {
   if (!window.ethereum) {
@@ -395,7 +395,7 @@ One click, and users are connected to Base network with their wallet.
 
 For live gas prices, we fetch directly from the Base blockchain using JSON-RPC calls.
 
-**SHOW:** Base RPC integration code from `frontend/src/utils/baseRpc.ts`
+Base RPC integration code (`frontend/src/utils/baseRpc.ts`):
 ```typescript
 export async function fetchLiveBaseGas(): Promise<number> {
   const rpcUrl = BASE_RPC_URLS[currentRpcIndex];
@@ -454,7 +454,7 @@ const BASE_RPC_URLS = [
 
 We call `eth_getBlockByNumber` to get the latest block's base fee, convert from hex to gwei. If one RPC is rate-limited, we automatically rotate to a backup. This ensures the dashboard always has live data.
 
-**SHOW:** Dashboard auto-refresh code from `frontend/pages/Dashboard.tsx`
+Dashboard auto-refresh code (`frontend/pages/Dashboard.tsx`):
 ```typescript
 // Auto-refresh data every 30 seconds
 useEffect(() => {
@@ -476,7 +476,7 @@ Everything updates every 30 seconds - predictions, graphs, current gas prices. U
 
 We built mobile-first. Every component adapts to screen size.
 
-**SHOW:** Responsive design code from `frontend/components/RelativePriceIndicator.tsx`
+Responsive design code (`frontend/components/RelativePriceIndicator.tsx`):
 ```typescript
 <div className={`
   bg-gradient-to-br from-gray-800 to-gray-900
@@ -535,7 +535,7 @@ Text scales from `text-sm` on mobile to `text-2xl` on desktop. Padding adjusts. 
 
 Built with Vite for instant hot reload during development. Production build optimizes chunks, tree-shakes unused code, and copies the PWA manifest for offline support.
 
-**SHOW:** Vite config from `frontend/vite.config.ts`
+Vite config (`frontend/vite.config.ts`):
 ```typescript
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
