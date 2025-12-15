@@ -7,7 +7,7 @@
 
 Hi! I'm Mohamed, and I handled the backend and ML for Base Gas Optimizer. I'm going to walk you through how we built the prediction engine that powers this tool.
 
-**SHOW:** Backend folder structure
+Backend folder structure:
 ```
 backend/
 ├── api/              # API routes and middleware
@@ -26,7 +26,7 @@ This was 4 intense days of data collection, machine learning, and API developmen
 
 Day 1 was all about getting data. We needed historical Base network gas prices to train our ML model and find patterns.
 
-**SHOW:** Data collection code from `backend/data/collector.py`
+Data collection code (`backend/data/collector.py`):
 ```python
 class BaseGasCollector:
     def __init__(self):
@@ -61,7 +61,7 @@ class BaseGasCollector:
 
 I built a script that fetches gas prices from Base RPC - mainnet.base.org - every 5 minutes. Sounds simple, right?
 
-**SHOW:** Rate limiting from `backend/api/middleware.py`
+Rate limiting configuration (`backend/api/middleware.py`):
 ```python
 # Rate limiter - more lenient in development
 if Config.DEBUG:
@@ -84,7 +84,7 @@ Wrong. We immediately hit rate limiting. The Base RPC started blocking us after 
 
 ## DAY 1: THE SOLUTION
 
-**SHOW:** Fallback API from `backend/data/collector.py`
+Fallback API implementation (`backend/data/collector.py`):
 ```python
 def _fetch_from_owlracle(self):
     """Fallback: Fetch from Owlracle API"""
@@ -107,7 +107,7 @@ def _fetch_from_owlracle(self):
         return None
 ```
 
-**SHOW:** Caching system from `backend/api/cache.py`
+Caching system (`backend/api/cache.py`):
 ```python
 # In-memory cache with 5 minute TTL
 cache = TTLCache(maxsize=100, ttl=300)
@@ -138,7 +138,7 @@ This way, the dashboard ALWAYS works, even if we're rate-limited.
 
 ## DAY 2-3: FIRST MODEL ATTEMPT
 
-**SHOW:** Model training code from `backend/models/model_trainer.py`
+Model training code (`backend/models/model_trainer.py`):
 ```python
 def train_all_models(self, X, y_1h, y_4h, y_24h):
     """Train models for all prediction horizons"""
@@ -174,7 +174,7 @@ def train_all_models(self, X, y_1h, y_4h, y_24h):
 
 Days 2 and 3 were machine learning hell.
 
-**SHOW:** First model results
+First model results:
 ```json
 {
   "1h": {
@@ -202,7 +202,7 @@ Result? 23% R-squared accuracy. Basically useless. The model was barely better t
 
 The breakthrough came from feature engineering. I created over 100 features from the raw gas price data:
 
-**SHOW:** Feature engineering code from `backend/models/feature_engineering.py`
+Feature engineering code (`backend/models/feature_engineering.py`):
 
 **TIME FEATURES:**
 ```python
@@ -271,7 +271,7 @@ Features created:
 
 After this feature engineering? 70% directional accuracy. This means we correctly predict whether gas will go UP or DOWN 70% of the time.
 
-**SHOW:** Model metrics
+Model metrics:
 ```
 1h Model Performance:
 ├── R² Score: 7.09%
@@ -282,7 +282,7 @@ After this feature engineering? 70% directional accuracy. This means we correctl
 Model Type: Ensemble (RandomForest + GradientBoosting)
 ```
 
-**SHOW:** Model hyperparameters from `backend/models/model_trainer.py`
+Model hyperparameters (`backend/models/model_trainer.py`):
 ```python
 def _train_model_variants(self, X_train, y_train, X_test, y_test):
     """Train multiple model architectures"""
@@ -414,7 +414,7 @@ def get_predictions():
 
 **ENDPOINT 4:** `/api/accuracy` - Shows model performance metrics
 
-**SHOW:** Deployment configuration from `backend/app.py`
+Deployment configuration (`backend/app.py`):
 ```python
 def create_app():
     """Application factory pattern"""
@@ -449,7 +449,7 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 ```
 
-**DEPENDENCIES:** `backend/requirements.txt`
+Dependencies (`backend/requirements.txt`):
 ```txt
 Flask==3.0.0
 Flask-CORS==4.0.0
@@ -466,7 +466,7 @@ anthropic==0.75.0
 
 Deployed the backend on Render. The challenge here was making sure the model files (.pkl files) were included in the deployment and loading fast enough for real-time predictions.
 
-**SHOW:** Caching config from `backend/api/cache.py`
+Caching configuration (`backend/api/cache.py`):
 ```python
 CACHE_CONFIG = {
     'current': 30,      # 30 seconds
@@ -526,9 +526,9 @@ PostgreSQL
 
 All the backend code is open source on GitHub - Python, Flask, scikit-learn, all there.
 
-**SHOW:** Live API endpoint at `https://basegasfeesml.onrender.com/api/predictions`
+Live API endpoint: `https://basegasfeesml.onrender.com/api/predictions`
 
-**API RESPONSE:**
+API response example:
 ```json
 {
   "current": {
