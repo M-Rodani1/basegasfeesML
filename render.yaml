@@ -6,9 +6,8 @@ services:
     region: oregon
     plan: free
     buildCommand: |
-      git lfs install
-      git lfs pull
       pip install -r backend/requirements.txt
+      python backend/scripts/download_models.py
     startCommand: cd backend && python app.py
     envVars:
       - key: PYTHON_VERSION
@@ -27,9 +26,8 @@ services:
     region: oregon
     plan: free
     buildCommand: |
-      git lfs install
-      git lfs pull
       pip install -r backend/requirements.txt
+      python backend/scripts/download_models.py
     startCommand: cd backend && python services/data_pipeline.py
     envVars:
       - key: PYTHON_VERSION
