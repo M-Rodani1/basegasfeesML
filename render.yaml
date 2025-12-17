@@ -5,9 +5,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: |
-      pip install -r backend/requirements.txt
-      python backend/scripts/download_models.py
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && python app.py
     envVars:
       - key: PYTHON_VERSION
@@ -25,9 +23,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: |
-      pip install -r backend/requirements.txt
-      python backend/scripts/download_models.py
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && python services/data_pipeline.py
     envVars:
       - key: PYTHON_VERSION
