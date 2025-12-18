@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
         // Fetch LIVE gas price from Base network RPC
         const liveGas = await fetchLiveBaseGas();
         setCurrentGas(liveGas.gwei);
-        console.log('🔴 LIVE Base gas price:', liveGas.gwei.toFixed(4), 'gwei');
+        console.log('🔴 LIVE Base gas price:', liveGas.gwei !== undefined && liveGas.gwei !== null ? liveGas.gwei.toFixed(4) : 'N/A', 'gwei');
 
         // Still fetch predictions from API (if available)
         const predictionsResult = await fetchPredictions();
