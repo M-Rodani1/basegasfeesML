@@ -239,7 +239,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <p className="text-xs text-gray-400">Tx per Block</p>
                 </div>
                 <p className="text-2xl font-bold text-white">
-                  {networkState.tx_per_block_avg.toFixed(1)}
+                  {networkState.tx_per_block_avg !== undefined && networkState.tx_per_block_avg !== null ? networkState.tx_per_block_avg.toFixed(1) : 'N/A'}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Average transactions
@@ -281,7 +281,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <p className="text-xs text-gray-400">Block Time</p>
                 </div>
                 <p className="text-2xl font-bold text-white">
-                  {networkState.block_time_avg.toFixed(1)}s
+                  {networkState.block_time_avg !== undefined && networkState.block_time_avg !== null ? networkState.block_time_avg.toFixed(1) : 'N/A'}s
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Average interval
@@ -295,7 +295,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <p className="text-xs text-gray-400">Current Gas</p>
                 </div>
                 <p className="text-2xl font-bold text-white">
-                  {networkState.gas_price.toFixed(6)}
+                  {networkState.gas_price !== undefined && networkState.gas_price !== null ? networkState.gas_price.toFixed(6) : 'N/A'}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Gwei

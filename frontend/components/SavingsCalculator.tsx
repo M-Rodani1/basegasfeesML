@@ -110,14 +110,14 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({
       <div className="space-y-4 mb-6">
         <div className="bg-gray-700/50 rounded-lg p-4">
           <div className="text-sm text-gray-400 mb-2">Cost if you transact NOW:</div>
-          <div className="text-2xl font-bold text-gray-200">${costNow.toFixed(4)}</div>
+          <div className="text-2xl font-bold text-gray-200">${costNow !== undefined && costNow !== null ? costNow.toFixed(4) : 'N/A'}</div>
         </div>
 
         <div className="bg-gray-700/50 rounded-lg p-4">
           <div className="text-sm text-gray-400 mb-2">
             Cost if you wait {formatTime(bestHorizon).toUpperCase()}:
           </div>
-          <div className="text-2xl font-bold text-green-400">${costBest.toFixed(4)}</div>
+          <div className="text-2xl font-bold text-green-400">${costBest !== undefined && costBest !== null ? costBest.toFixed(4) : 'N/A'}</div>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({
         <div className="mb-3">
           <div className="text-lg font-semibold text-green-400 mb-1">💵 YOU SAVE:</div>
           <div className="text-3xl font-bold text-green-400">
-            ${savings.toFixed(4)} ({savingsPercent.toFixed(0)}%)
+            ${savings !== undefined && savings !== null ? savings.toFixed(4) : 'N/A'} ({savingsPercent !== undefined && savingsPercent !== null ? savingsPercent.toFixed(0) : '0'}%)
           </div>
         </div>
         {bestHorizon !== 'now' && (

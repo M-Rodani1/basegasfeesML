@@ -136,7 +136,7 @@ const ModelAccuracy: React.FC = () => {
             <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
               <div className="text-sm text-gray-400 mb-1">MAE</div>
               <div className={`text-2xl font-bold ${getMetricColor(data.mae, 'mae')}`}>
-                {data.mae.toFixed(6)}
+                {data.mae !== undefined && data.mae !== null ? data.mae.toFixed(6) : 'N/A'}
               </div>
               <div className="text-xs text-gray-500 mt-1">Mean Absolute Error</div>
             </div>
@@ -144,7 +144,7 @@ const ModelAccuracy: React.FC = () => {
             <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
               <div className="text-sm text-gray-400 mb-1">RMSE</div>
               <div className={`text-2xl font-bold ${getMetricColor(data.rmse, 'rmse')}`}>
-                {data.rmse.toFixed(6)}
+                {data.rmse !== undefined && data.rmse !== null ? data.rmse.toFixed(6) : 'N/A'}
               </div>
               <div className="text-xs text-gray-500 mt-1">Root Mean Squared Error</div>
             </div>
@@ -152,7 +152,7 @@ const ModelAccuracy: React.FC = () => {
             <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
               <div className="text-sm text-gray-400 mb-1">R² Score</div>
               <div className={`text-2xl font-bold ${getMetricColor(data.r2, 'r2')}`}>
-                {(data.r2 * 100).toFixed(1)}%
+                {data.r2 !== undefined && data.r2 !== null ? (data.r2 * 100).toFixed(1) : 'N/A'}%
               </div>
               <div className="text-xs text-gray-500 mt-1">Variance Explained</div>
             </div>
@@ -160,7 +160,7 @@ const ModelAccuracy: React.FC = () => {
             <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
               <div className="text-sm text-gray-400 mb-1">Directional Accuracy</div>
               <div className={`text-2xl font-bold ${getMetricColor(data.directional_accuracy, 'directional')}`}>
-                {(data.directional_accuracy * 100).toFixed(1)}%
+                {data.directional_accuracy !== undefined && data.directional_accuracy !== null ? (data.directional_accuracy * 100).toFixed(1) : 'N/A'}%
               </div>
               <div className="text-xs text-gray-500 mt-1">Up/Down Prediction</div>
             </div>
@@ -182,7 +182,7 @@ const ModelAccuracy: React.FC = () => {
                 <div className="text-right">
                   <div className="text-sm text-gray-400">Overall Accuracy</div>
                   <div className={`text-2xl font-bold text-${confidence.color}-400`}>
-                    {(data.directional_accuracy * 100).toFixed(0)}%
+                    {data.directional_accuracy !== undefined && data.directional_accuracy !== null ? (data.directional_accuracy * 100).toFixed(0) : 'N/A'}%
                   </div>
                 </div>
               </div>

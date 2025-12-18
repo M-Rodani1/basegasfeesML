@@ -82,7 +82,7 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
             {bestHours.map((h) => (
               <div key={h.hour} className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="font-mono font-bold text-gray-100">{formatHour(h.hour)}</span>
-                <span className="text-gray-400">{h.avgGas.toFixed(4)} gwei</span>
+                <span className="text-gray-400">{h.avgGas !== undefined && h.avgGas !== null ? h.avgGas.toFixed(4) : 'N/A'} gwei</span>
               </div>
             ))}
           </div>
@@ -103,7 +103,7 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
             {worstHours.map((h) => (
               <div key={h.hour} className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="font-mono font-bold text-gray-100">{formatHour(h.hour)}</span>
-                <span className="text-gray-400">{h.avgGas.toFixed(4)} gwei</span>
+                <span className="text-gray-400">{h.avgGas !== undefined && h.avgGas !== null ? h.avgGas.toFixed(4) : 'N/A'} gwei</span>
               </div>
             ))}
           </div>
@@ -119,7 +119,7 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
         <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-400">Current gas price:</span>
-            <span className="font-bold text-gray-100">{currentGas.toFixed(4)} gwei</span>
+            <span className="font-bold text-gray-100">{currentGas !== undefined && currentGas !== null ? currentGas.toFixed(4) : 'N/A'} gwei</span>
           </div>
           <div className="flex items-center justify-between text-sm mt-1">
             <span className="text-gray-400">vs. 24h average:</span>

@@ -155,7 +155,7 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
               }`}
               style={{ backgroundColor: getColor(data.avgGas) }}
               onClick={() => setSelectedHour(isSelected ? null : data.hour)}
-              title={`${formatHour(data.hour)}:00 - ${(data.avgGas * 1000).toFixed(3)} gwei`}
+              title={`${formatHour(data.hour)}:00 - ${data.avgGas !== undefined && data.avgGas !== null ? (data.avgGas * 1000).toFixed(3) : 'N/A'} gwei`}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-[8px] sm:text-xs font-bold text-white drop-shadow-lg">
@@ -205,7 +205,7 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
             <div>
               <div className="text-xs text-gray-400 mb-1">Avg Gas Price</div>
               <div className="text-lg sm:text-xl font-bold text-gray-100">
-                {(hourlyData[selectedHour].avgGas * 1000).toFixed(3)}
+                {hourlyData[selectedHour]?.avgGas !== undefined && hourlyData[selectedHour]?.avgGas !== null ? (hourlyData[selectedHour].avgGas * 1000).toFixed(3) : 'N/A'}
               </div>
               <div className="text-xs text-gray-400">gwei</div>
             </div>
@@ -236,7 +236,7 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Average</div>
           <div className="text-sm font-bold text-gray-100">
-            {((hourlyData.reduce((sum, h) => sum + h.avgGas, 0) / hourlyData.length) * 1000).toFixed(3)}
+            {hourlyData.length > 0 ? ((hourlyData.reduce((sum, h) => sum + (h.avgGas || 0), 0) / hourlyData.length) * 1000).toFixed(3) : 'N/A'}
           </div>
         </div>
         <div className="text-center">
