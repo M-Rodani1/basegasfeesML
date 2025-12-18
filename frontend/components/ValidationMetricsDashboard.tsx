@@ -61,8 +61,8 @@ const ValidationMetricsDashboard: React.FC = () => {
       setError(null);
 
       const [metricsRes, healthRes] = await Promise.all([
-        fetch(`${API_BASE}/api/validation/metrics?horizon=all`),
-        fetch(`${API_BASE}/api/validation/health`)
+        fetch(`${API_BASE}/validation/metrics?horizon=all`),
+        fetch(`${API_BASE}/validation/health`)
       ]);
 
       // Handle 503 (no data yet) gracefully
@@ -101,7 +101,7 @@ const ValidationMetricsDashboard: React.FC = () => {
 
   const fetchTrends = async (horizon: string, days: number) => {
     try {
-      const response = await fetch(`${API_BASE}/api/validation/trends?horizon=${horizon}&days=${days}`);
+      const response = await fetch(`${API_BASE}/validation/trends?horizon=${horizon}&days=${days}`);
       if (!response.ok) {
         console.warn('Trends not available yet');
         return;
