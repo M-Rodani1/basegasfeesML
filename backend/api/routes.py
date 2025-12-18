@@ -137,7 +137,13 @@ def current_gas():
     try:
         data = collector.get_current_gas()
         if data:
-            db.save_gas_price(data)
+            # Try to save to database, but don't fail if database is locked
+            try:
+                db.save_gas_price(data)
+            except Exception as db_error:
+                # Log database error but still return data to user
+                logger.warning(f"Could not save to database (database may be locked): {db_error}")
+
             logger.info(f"Current gas: {data['current_gas']} gwei")
             return jsonify(data)
         return jsonify({'error': 'Failed to fetch gas data'}), 500

@@ -52,7 +52,19 @@ class OnChainFeatures(Base):
 
 class DatabaseManager:
     def __init__(self):
-        self.engine = create_engine(Config.DATABASE_URL, pool_pre_ping=True)
+        # Add SQLite-specific configuration for concurrent access
+        connect_args = {}
+        if Config.DATABASE_URL.startswith('sqlite'):
+            connect_args = {
+                'check_same_thread': False,
+                'timeout': 30  # 30 second timeout for locked database
+            }
+
+        self.engine = create_engine(
+            Config.DATABASE_URL,
+            pool_pre_ping=True,
+            connect_args=connect_args
+        )
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
     
