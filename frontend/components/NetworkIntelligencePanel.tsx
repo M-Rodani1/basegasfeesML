@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Network, Activity, Zap, TrendingUp, Box, Code, Gauge } from 'lucide-react';
 
+interface NetworkStateResponse {
+  network_state: {
+    current_block: number;
+    avg_utilization: number;
+    avg_tx_count: number;
+    avg_base_fee: number;
+    base_fee_trend: number;
+    is_congested: boolean;
+    timestamp: string;
+  };
+  interpretation: {
+    congestion_level: string;
+    gas_trend: string;
+    recommendation: string;
+  };
+  timestamp: string;
+}
+
 interface NetworkState {
   current_block: number;
-  block_time_avg: number;
+  block_time_avg?: number;
   gas_price: number;
   network_congestion: string;
   congestion_score: number;
   tx_per_block_avg: number;
   block_utilization_avg: number;
-  contract_call_ratio: number;
+  contract_call_ratio?: number;
 }
 
 interface CongestionHistory {
@@ -48,10 +66,20 @@ const NetworkIntelligencePanel: React.FC = () => {
         throw new Error('Failed to fetch network data');
       }
 
-      const stateData = await stateRes.json();
+      const stateData: NetworkStateResponse = await stateRes.json();
       const historyData = await historyRes.json();
 
-      setNetworkState(stateData);
+      // Transform API response to component format
+      const transformedState: NetworkState = {
+        current_block: stateData.network_state.current_block,
+        gas_price: stateData.network_state.avg_base_fee,
+        network_congestion: stateData.interpretation.congestion_level,
+        congestion_score: stateData.network_state.avg_utilization,
+        tx_per_block_avg: stateData.network_state.avg_tx_count,
+        block_utilization_avg: stateData.network_state.avg_utilization,
+      };
+
+      setNetworkState(transformedState);
       setCongestionHistory(historyData);
       setLoading(false);
     } catch (err) {
@@ -61,21 +89,25 @@ const NetworkIntelligencePanel: React.FC = () => {
     }
   };
 
-  const getCongestionColor = (level: string) => {
+  const getCongestionColor = (level: string | undefined) => {
+    if (!level) return 'text-gray-400 bg-gray-500/20';
     switch (level.toLowerCase()) {
       case 'low': return 'text-green-400 bg-green-500/20';
       case 'moderate': return 'text-yellow-400 bg-yellow-500/20';
       case 'high': return 'text-orange-400 bg-orange-500/20';
+      case 'critical': return 'text-red-400 bg-red-500/20';
       case 'extreme': return 'text-red-400 bg-red-500/20';
       default: return 'text-gray-400 bg-gray-500/20';
     }
   };
 
-  const getCongestionIcon = (level: string) => {
+  const getCongestionIcon = (level: string | undefined) => {
+    if (!level) return '⚪';
     switch (level.toLowerCase()) {
       case 'low': return '🟢';
       case 'moderate': return '🟡';
       case 'high': return '🟠';
+      case 'critical': return '🔴';
       case 'extreme': return '🔴';
       default: return '⚪';
     }
