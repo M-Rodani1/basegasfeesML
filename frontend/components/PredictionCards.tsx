@@ -256,15 +256,15 @@ const PredictionCards: React.FC = () => {
               {/* Range labels */}
               <div className="flex justify-between text-xs">
                 <div className="text-green-400">
-                  <div className="font-mono">{card.lowerBound.toFixed(4)}</div>
+                  <div className="font-mono">{card.lowerBound !== undefined && card.lowerBound !== null ? card.lowerBound.toFixed(4) : 'N/A'}</div>
                   <div className="text-gray-500">Best Case</div>
                 </div>
                 <div className="text-cyan-400 text-center">
-                  <div className="font-mono font-bold">{card.predicted.toFixed(4)}</div>
+                  <div className="font-mono font-bold">{card.predicted !== undefined && card.predicted !== null ? card.predicted.toFixed(4) : 'N/A'}</div>
                   <div className="text-gray-500">Most Likely</div>
                 </div>
                 <div className="text-red-400 text-right">
-                  <div className="font-mono">{card.upperBound.toFixed(4)}</div>
+                  <div className="font-mono">{card.upperBound !== undefined && card.upperBound !== null ? card.upperBound.toFixed(4) : 'N/A'}</div>
                   <div className="text-gray-500">Worst Case</div>
                 </div>
               </div>
@@ -274,16 +274,16 @@ const PredictionCards: React.FC = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Current:</span>
-              <span className="text-gray-200 font-medium">{card.current.toFixed(4)} gwei</span>
+              <span className="text-gray-200 font-medium">{card.current !== undefined && card.current !== null ? card.current.toFixed(4) : 'N/A'} gwei</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Predicted:</span>
-              <span className="text-gray-200 font-medium">{card.predicted.toFixed(4)} gwei</span>
+              <span className="text-gray-200 font-medium">{card.predicted !== undefined && card.predicted !== null ? card.predicted.toFixed(4) : 'N/A'} gwei</span>
             </div>
             <div className="flex justify-between text-sm pt-2 border-t border-gray-700">
               <span className="text-gray-400">Potential Savings:</span>
               <span className={`font-bold ${getTextColor(card.color)}`}>
-                {Math.abs(card.changePercent).toFixed(0)}%
+                {card.changePercent !== undefined && card.changePercent !== null ? Math.abs(card.changePercent).toFixed(0) : '0'}%
               </span>
             </div>
           </div>
@@ -307,7 +307,7 @@ const PredictionCards: React.FC = () => {
                     </span>
                   </div>
                   <span className={`${confClass.text} font-bold`}>
-                    {(card.confidence * 100).toFixed(0)}%
+                    {card.confidence !== undefined && card.confidence !== null ? (card.confidence * 100).toFixed(0) : '0'}%
                   </span>
                 </div>
                 <p className={`text-xs ${confClass.textLight} mt-2`}>

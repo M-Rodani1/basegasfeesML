@@ -64,7 +64,7 @@ const GasLeaderboard: React.FC = () => {
         <div className="bg-gradient-to-br from-cyan-600/20 to-cyan-800/20 p-3 rounded-lg border border-cyan-500/30">
           <div className="text-xs text-gray-400 mb-1">Current Gas Price</div>
           <div className="text-2xl font-bold text-cyan-400">
-            {currentGas.current_gas.toFixed(4)}
+            {currentGas.current_gas !== undefined && currentGas.current_gas !== null ? currentGas.current_gas.toFixed(4) : 'N/A'}
             <span className="text-sm text-gray-400 ml-1">Gwei</span>
           </div>
         </div>
@@ -73,7 +73,7 @@ const GasLeaderboard: React.FC = () => {
         <div className="bg-gray-700/50 p-2 rounded-md">
           <div className="text-xs text-gray-400">Base Fee</div>
           <div className="text-lg font-semibold text-gray-100">
-            {currentGas.base_fee.toFixed(4)} Gwei
+            {currentGas.base_fee !== undefined && currentGas.base_fee !== null ? currentGas.base_fee.toFixed(4) : 'N/A'} Gwei
           </div>
         </div>
 
@@ -81,7 +81,7 @@ const GasLeaderboard: React.FC = () => {
         <div className="bg-gray-700/50 p-2 rounded-md">
           <div className="text-xs text-gray-400">Priority Fee</div>
           <div className="text-lg font-semibold text-gray-100">
-            {currentGas.priority_fee.toFixed(4)} Gwei
+            {currentGas.priority_fee !== undefined && currentGas.priority_fee !== null ? currentGas.priority_fee.toFixed(4) : 'N/A'} Gwei
           </div>
         </div>
 
