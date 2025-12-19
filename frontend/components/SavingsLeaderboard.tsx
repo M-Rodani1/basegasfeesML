@@ -61,7 +61,7 @@ const SavingsLeaderboard: React.FC<SavingsLeaderboardProps> = ({ walletAddress }
   };
 
   const getUserEntry = () => {
-    if (!walletAddress || userRank === null) return null;
+    if (!walletAddress || userRank === null || !leaderboard || leaderboard.length === 0) return null;
     return leaderboard.find(entry => entry.address.toLowerCase() === walletAddress.toLowerCase());
   };
 
@@ -91,7 +91,7 @@ const SavingsLeaderboard: React.FC<SavingsLeaderboardProps> = ({ walletAddress }
 
       {/* Leaderboard */}
       <div className="space-y-2 mb-4">
-        {leaderboard.slice(0, 10).map((entry) => {
+        {leaderboard && leaderboard.length > 0 ? leaderboard.slice(0, 10).map((entry) => {
           const isUser = walletAddress && entry.address.toLowerCase() === walletAddress.toLowerCase();
           return (
             <div
@@ -126,7 +126,7 @@ const SavingsLeaderboard: React.FC<SavingsLeaderboardProps> = ({ walletAddress }
               </div>
             </div>
           );
-        })}
+        }) : <div className="text-gray-400 text-sm">No leaderboard data available</div>}
       </div>
 
       {/* User Rank (if not in top 10) */}

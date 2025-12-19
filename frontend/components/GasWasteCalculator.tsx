@@ -54,15 +54,21 @@ const GasWasteCalculator: React.FC<GasWasteCalculatorProps> = ({ walletAddress }
       };
     }
 
-    // Calculate average gas price over period
-    const gasPrices = historicalData.map(d => d.gwei || 0).filter(p => p > 0);
-    if (gasPrices.length === 0) return { avgGasPaid: 0, optimizedGasCost: 0, waste: 0, wastePercent: 0, annualWaste: 0 };
+    // Calculate average gas price over period - with safety checks
+    const gasPrices = historicalData && historicalData.length > 0
+      ? historicalData.map(d => d.gwei || 0).filter(p => p > 0)
+      : [];
+    if (!gasPrices || gasPrices.length === 0) return { avgGasPaid: 0, optimizedGasCost: 0, waste: 0, wastePercent: 0, annualWaste: 0 };
 
-    const avgGasPrice = gasPrices.reduce((a, b) => a + b, 0) / gasPrices.length;
-    
+    const avgGasPrice = gasPrices.length > 0
+      ? gasPrices.reduce((a, b) => a + b, 0) / gasPrices.length
+      : 0;
+
     // Find optimal (lowest) gas prices (bottom 20th percentile)
-    const sortedPrices = [...gasPrices].sort((a, b) => a - b);
-    const optimalGasPrice = sortedPrices[Math.floor(sortedPrices.length * 0.2)]; // 20th percentile
+    const sortedPrices = gasPrices && gasPrices.length > 0 ? [...gasPrices].sort((a, b) => a - b) : [];
+    const optimalGasPrice = sortedPrices && sortedPrices.length > 0
+      ? sortedPrices[Math.floor(sortedPrices.length * 0.2)]
+      : 0; // 20th percentile
 
     // Calculate costs
     const costPerTx = (gasPrice: number) => {

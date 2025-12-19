@@ -191,7 +191,7 @@ const PredictionCards: React.FC = () => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {cards.map((card) => (
+        {cards && cards.length > 0 ? cards.map((card) => (
           <div
             key={card.horizon}
             className={`bg-gray-800 p-4 md:p-6 rounded-lg shadow-lg border-2 ${getColorClasses(card.color)} relative`}
@@ -350,7 +350,8 @@ const PredictionCards: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      )) : <div className="col-span-3 text-gray-400 text-center">Loading predictions...</div>}
+      </div>
     </>
   );
 };

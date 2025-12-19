@@ -314,7 +314,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <div>
                     <p className="text-xs text-gray-400 mb-2">Congestion Score</p>
                     <div className="flex items-end gap-0.5 h-20">
-                      {congestionHistory.congestion_scores.map((score, idx) => {
+                      {congestionHistory.congestion_scores && congestionHistory.congestion_scores.length > 0 ? congestionHistory.congestion_scores.map((score, idx) => {
                         let color = 'bg-green-500/50';
                         if (score > 0.7) color = 'bg-red-500/50';
                         else if (score > 0.5) color = 'bg-orange-500/50';
@@ -328,7 +328,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                             title={`${new Date(congestionHistory.timestamps[idx]).toLocaleTimeString()}: ${formatPercentage(score)}`}
                           />
                         );
-                      })}
+                      }) : <div className="text-xs text-gray-500">No data</div>}
                     </div>
                   </div>
 
@@ -336,14 +336,14 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <div>
                     <p className="text-xs text-gray-400 mb-2">Block Utilization</p>
                     <div className="flex items-end gap-0.5 h-16">
-                      {congestionHistory.block_utilization.map((util, idx) => (
+                      {congestionHistory.block_utilization && congestionHistory.block_utilization.length > 0 ? congestionHistory.block_utilization.map((util, idx) => (
                         <div
                           key={idx}
                           className="flex-1 bg-blue-500/50 rounded-t hover:bg-blue-500/70 transition-colors"
                           style={{ height: `${util * 100}%` }}
                           title={`${new Date(congestionHistory.timestamps[idx]).toLocaleTimeString()}: ${formatPercentage(util)}`}
                         />
-                      ))}
+                      )) : <div className="text-xs text-gray-500">No data</div>}
                     </div>
                   </div>
 
@@ -351,8 +351,10 @@ const NetworkIntelligencePanel: React.FC = () => {
                   <div>
                     <p className="text-xs text-gray-400 mb-2">Transaction Volume</p>
                     <div className="flex items-end gap-0.5 h-16">
-                      {congestionHistory.tx_counts.map((count, idx) => {
-                        const maxCount = Math.max(...congestionHistory.tx_counts);
+                      {congestionHistory.tx_counts && congestionHistory.tx_counts.length > 0 ? congestionHistory.tx_counts.map((count, idx) => {
+                        const maxCount = congestionHistory.tx_counts && congestionHistory.tx_counts.length > 0
+                          ? Math.max(...congestionHistory.tx_counts)
+                          : 1;
                         const height = (count / maxCount) * 100;
                         return (
                           <div
@@ -362,7 +364,7 @@ const NetworkIntelligencePanel: React.FC = () => {
                             title={`${new Date(congestionHistory.timestamps[idx]).toLocaleTimeString()}: ${count} tx`}
                           />
                         );
-                      })}
+                      }) : <div className="text-xs text-gray-500">No data</div>}
                     </div>
                   </div>
                 </div>

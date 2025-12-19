@@ -94,8 +94,12 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
     );
   }
 
-  const minGas = Math.min(...hourlyData.map(h => h.avgGas));
-  const maxGas = Math.max(...hourlyData.map(h => h.avgGas));
+  const minGas = hourlyData && hourlyData.length > 0
+    ? Math.min(...hourlyData.map(h => h.avgGas))
+    : 0;
+  const maxGas = hourlyData && hourlyData.length > 0
+    ? Math.max(...hourlyData.map(h => h.avgGas))
+    : 0;
   const currentHour = new Date().getUTCHours();
 
   const getColor = (gas: number) => {
@@ -141,7 +145,7 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
 
       {/* Heatmap Grid */}
       <div className="grid grid-cols-12 gap-1 mb-4">
-        {hourlyData.map((data) => {
+        {hourlyData && hourlyData.length > 0 ? hourlyData.map((data) => {
           const isCurrentHour = data.hour === currentHour;
           const isSelected = data.hour === selectedHour;
 
@@ -167,7 +171,7 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
               )}
             </div>
           );
-        })}
+        }) : <div className="text-gray-400 text-sm">Loading heatmap data...</div>}
       </div>
 
       {/* Legend */}
@@ -230,19 +234,23 @@ const HourlyHeatmap: React.FC<HourlyHeatmapProps> = ({ className = '' }) => {
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Cheapest</div>
           <div className="text-sm font-bold text-green-400">
-            {formatHour(hourlyData.reduce((min, h) => h.avgGas < min.avgGas ? h : min).hour)}:00
+            {hourlyData && hourlyData.length > 0
+              ? formatHour(hourlyData.reduce((min, h) => h.avgGas < min.avgGas ? h : min).hour) + ':00'
+              : 'N/A'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Average</div>
           <div className="text-sm font-bold text-gray-100">
-            {hourlyData.length > 0 ? ((hourlyData.reduce((sum, h) => sum + (h.avgGas || 0), 0) / hourlyData.length) * 1000).toFixed(3) : 'N/A'}
+            {hourlyData && hourlyData.length > 0 ? ((hourlyData.reduce((sum, h) => sum + (h.avgGas || 0), 0) / hourlyData.length) * 1000).toFixed(3) : 'N/A'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Most Expensive</div>
           <div className="text-sm font-bold text-red-400">
-            {formatHour(hourlyData.reduce((max, h) => h.avgGas > max.avgGas ? h : max).hour)}:00
+            {hourlyData && hourlyData.length > 0
+              ? formatHour(hourlyData.reduce((max, h) => h.avgGas > max.avgGas ? h : max).hour) + ':00'
+              : 'N/A'}
           </div>
         </div>
       </div>

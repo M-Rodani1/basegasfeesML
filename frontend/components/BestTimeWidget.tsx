@@ -49,15 +49,21 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
     );
   }
 
-  // Find best and worst hours
-  const sortedByGas = [...hourlyStats].sort((a, b) => a.avgGas - b.avgGas);
+  // Find best and worst hours - with safety checks
+  const sortedByGas = hourlyStats && hourlyStats.length > 0 ? [...hourlyStats].sort((a, b) => a.avgGas - b.avgGas) : [];
   const bestHours = sortedByGas.slice(0, 3);
   const worstHours = sortedByGas.slice(-3).reverse();
 
-  const avgGas = hourlyStats.reduce((sum, h) => sum + h.avgGas, 0) / hourlyStats.length;
-  const bestAvg = bestHours.reduce((sum, h) => sum + h.avgGas, 0) / bestHours.length;
-  const worstAvg = worstHours.reduce((sum, h) => sum + h.avgGas, 0) / worstHours.length;
-  const savingsPercent = Math.round(((worstAvg - bestAvg) / worstAvg) * 100);
+  const avgGas = hourlyStats && hourlyStats.length > 0
+    ? hourlyStats.reduce((sum, h) => sum + h.avgGas, 0) / hourlyStats.length
+    : 0;
+  const bestAvg = bestHours && bestHours.length > 0
+    ? bestHours.reduce((sum, h) => sum + h.avgGas, 0) / bestHours.length
+    : 0;
+  const worstAvg = worstHours && worstHours.length > 0
+    ? worstHours.reduce((sum, h) => sum + h.avgGas, 0) / worstHours.length
+    : 0;
+  const savingsPercent = worstAvg > 0 ? Math.round(((worstAvg - bestAvg) / worstAvg) * 100) : 0;
 
   const formatHour = (hour: number) => {
     return `${hour.toString().padStart(2, '0')}:00`;
@@ -79,12 +85,12 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
           </div>
 
           <div className="space-y-1 mb-3">
-            {bestHours.map((h) => (
+            {bestHours && bestHours.length > 0 ? bestHours.map((h) => (
               <div key={h.hour} className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="font-mono font-bold text-gray-100">{formatHour(h.hour)}</span>
                 <span className="text-gray-400">{h.avgGas !== undefined && h.avgGas !== null ? h.avgGas.toFixed(4) : 'N/A'} gwei</span>
               </div>
-            ))}
+            )) : <div className="text-xs text-gray-400">No data available</div>}
           </div>
 
           <div className="text-xs sm:text-sm text-green-300 font-semibold">
@@ -100,12 +106,12 @@ const BestTimeWidget: React.FC<BestTimeWidgetProps> = ({ currentGas = 0 }) => {
           </div>
 
           <div className="space-y-1 mb-3">
-            {worstHours.map((h) => (
+            {worstHours && worstHours.length > 0 ? worstHours.map((h) => (
               <div key={h.hour} className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="font-mono font-bold text-gray-100">{formatHour(h.hour)}</span>
                 <span className="text-gray-400">{h.avgGas !== undefined && h.avgGas !== null ? h.avgGas.toFixed(4) : 'N/A'} gwei</span>
               </div>
-            ))}
+            )) : <div className="text-xs text-gray-400">No data available</div>}
           </div>
 
           <div className="text-xs sm:text-sm text-red-300 font-semibold">
