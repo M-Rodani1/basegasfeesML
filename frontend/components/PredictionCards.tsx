@@ -329,7 +329,9 @@ const PredictionCards: React.FC = () => {
             </button>
           </div>
         </div>
-      ))}
+        )) : (
+          <div className="col-span-3 text-gray-400 text-center p-8">Loading predictions...</div>
+        )}
       </div>
 
       {/* Explanation Modal */}
@@ -350,8 +352,7 @@ const PredictionCards: React.FC = () => {
             </div>
           </div>
         </div>
-      )) : <div className="col-span-3 text-gray-400 text-center">Loading predictions...</div>}
-      </div>
+      )}
     </>
   );
 };
