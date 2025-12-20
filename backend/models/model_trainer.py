@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import RobustScaler  # Week 1 Quick Win #3: RobustScaler for outlier handling
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import joblib
 import os
@@ -13,6 +14,7 @@ class GasModelTrainer:
     def __init__(self):
         self.models = {}
         self.best_models = {}
+        self.scalers = {}  # Store RobustScalers for each horizon (Week 1 Quick Win #3)
         
     def train_all_models(self, X, y_1h, y_4h, y_24h):
         """
@@ -32,13 +34,48 @@ class GasModelTrainer:
             print(f"🎯 Training models for {horizon} prediction horizon")
             print(f"{'='*60}")
             
-            # Remove NaN values
-            valid_idx = ~(y.isna() | X.isna().any(axis=1))
-            X_clean = X[valid_idx]
-            y_clean = y[valid_idx]
+            if len(y) == 0 or y.isna().all():
+                print(f"⚠️  No target data for {horizon}, skipping...")
+                continue
+            
+            # Align X with y (y is already filtered for this horizon via shift operations)
+            # Get common indices
+            common_idx = X.index.intersection(y.index)
+            
+            if len(common_idx) == 0:
+                print(f"⚠️  No overlapping indices for {horizon}, skipping...")
+                continue
+            
+            X_aligned = X.loc[common_idx]
+            y_aligned = y.loc[common_idx]
+            
+            print(f"   After alignment: {len(X_aligned)} samples")
+            
+            # Remove NaN values - be lenient with enhanced features
+            # Only require core features and target to be non-NaN
+            # Enhanced features can be 0 (already filled)
+            y_valid = ~y_aligned.isna()
+            
+            # Check for NaN in core features (not enhanced features)
+            # Enhanced features are: pending_tx_count, unique_addresses, etc.
+            enhanced_feature_prefixes = ['pending_', 'unique_', 'tx_per_', 'gas_utilization_ratio', 
+                                        'avg_tx_gas', 'large_tx_ratio', 'congestion_level', 'is_highly_congested']
+            core_features = [col for col in X_aligned.columns 
+                           if not any(col.startswith(prefix) for prefix in enhanced_feature_prefixes)]
+            
+            if core_features:
+                X_core_valid = ~X_aligned[core_features].isna().any(axis=1)
+            else:
+                X_core_valid = pd.Series([True] * len(X_aligned), index=X_aligned.index)
+            
+            valid_idx = y_valid & X_core_valid
+            X_clean = X_aligned[valid_idx]
+            y_clean = y_aligned[valid_idx]
+            
+            print(f"   After NaN removal: {len(X_clean)} samples")
             
             if len(X_clean) < 50:
-                print(f"⚠️  Not enough valid data for {horizon}, skipping...")
+                print(f"⚠️  Not enough valid data for {horizon} ({len(X_clean)} samples), skipping...")
                 continue
             
             # Split data
@@ -46,8 +83,19 @@ class GasModelTrainer:
                 X_clean, y_clean, test_size=0.2, shuffle=False  # Time series - don't shuffle!
             )
             
-            # Train multiple model types
-            models = self._train_model_variants(X_train, y_train, X_test, y_test)
+            # Week 1 Quick Win #3: Scale features with RobustScaler (handles outliers better)
+            # RobustScaler uses median and IQR instead of mean/std, making it robust to gas price spikes
+            scaler = RobustScaler()
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
+            
+            # Store scaler for this horizon
+            self.scalers[horizon] = scaler
+            
+            print(f"✅ Features scaled with RobustScaler (robust to outliers)")
+            
+            # Train multiple model types (on scaled features)
+            models = self._train_model_variants(X_train_scaled, y_train, X_test_scaled, y_test)
             
             # Save best model
             best_model = self._select_best_model(models, horizon)
@@ -65,7 +113,11 @@ class GasModelTrainer:
         return results
     
     def _train_model_variants(self, X_train, y_train, X_test, y_test):
-        """Train multiple model architectures"""
+        """
+        Train multiple model architectures
+        
+        Note: X_train and X_test are already scaled with RobustScaler
+        """
         models = []
         
         # 1. Random Forest
@@ -145,22 +197,34 @@ class GasModelTrainer:
         return best
     
     def save_models(self, output_dir='models/saved_models'):
-        """Save all best models to disk"""
+        """
+        Save all best models to disk with RobustScaler
+        
+        Week 1 Quick Win #3: RobustScaler is saved with each model
+        for consistent scaling during prediction.
+        """
         os.makedirs(output_dir, exist_ok=True)
         
         for horizon, model_info in self.best_models.items():
             filepath = os.path.join(output_dir, f'model_{horizon}.pkl')
             
-            # Save model + metadata
+            # Get scaler for this horizon
+            scaler = self.scalers.get(horizon)
+            
+            # Save model + metadata + scaler
             save_data = {
                 'model': model_info['model'],
                 'model_name': model_info['name'],
                 'metrics': model_info['metrics'],
-                'trained_at': datetime.now().isoformat()
+                'trained_at': datetime.now().isoformat(),
+                'feature_scaler': scaler,  # Week 1 Quick Win #3: RobustScaler
+                'scaler_type': 'RobustScaler',  # For compatibility checking
             }
             
             joblib.dump(save_data, filepath)
             print(f"💾 Saved {horizon} model to {filepath}")
+            if scaler:
+                print(f"   ✅ Included RobustScaler for feature scaling")
     
     @staticmethod
     def load_model(horizon, model_dir='models/saved_models'):

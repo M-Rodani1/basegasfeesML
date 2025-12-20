@@ -46,7 +46,26 @@ class GasFeatureEngineer:
         df = self._add_target_variables(df)
         
         # Remove NaN rows (from lag/rolling operations)
-        df = df.dropna()
+        # But be lenient with enhanced features - they can be zero if not available
+        # Only drop rows where core features are missing
+        core_features = ['gas', 'base_fee', 'priority_fee']
+        df = df.dropna(subset=core_features)
+        
+        # Fill any remaining NaN in enhanced features and contract_call_ratio with 0
+        enhanced_cols = [
+            'pending_tx_count', 'unique_addresses', 'tx_per_second',
+            'gas_utilization_ratio', 'avg_tx_gas', 'large_tx_ratio',
+            'congestion_level', 'is_highly_congested', 'contract_call_ratio'
+        ]
+        for col in enhanced_cols:
+            if col in df.columns:
+                df[col] = df[col].fillna(0)
+        
+        # Fill NaN in lag/rolling features with forward fill then backward fill then 0
+        lag_cols = [col for col in df.columns if 'lag' in col or 'rolling' in col or 'change' in col]
+        for col in lag_cols:
+            if col in df.columns:
+                df[col] = df[col].ffill().bfill().fillna(0)
         
         print(f"✅ Prepared {len(df)} training samples with {len(df.columns)} features")
         
@@ -88,7 +107,7 @@ class GasFeatureEngineer:
                         'unique_addresses': f.unique_addresses if hasattr(f, 'unique_addresses') else None,
                         'tx_per_second': f.tx_per_second if hasattr(f, 'tx_per_second') else None,
                         'gas_utilization_ratio': f.gas_utilization_ratio if hasattr(f, 'gas_utilization_ratio') else None,
-                        'contract_call_ratio': f.contract_call_ratio,
+                        'contract_call_ratio': f.contract_call_ratio if hasattr(f, 'contract_call_ratio') else None,
                         'avg_tx_gas': f.avg_tx_gas if hasattr(f, 'avg_tx_gas') else None,
                         'large_tx_ratio': f.large_tx_ratio if hasattr(f, 'large_tx_ratio') else None,
                         'congestion_level': f.congestion_level if hasattr(f, 'congestion_level') else None,
@@ -110,7 +129,8 @@ class GasFeatureEngineer:
                         suffixes=('', '_onchain')
                     )
                     
-                    # Fill missing values with forward fill (use last known value)
+                    # Fill missing values with forward fill, then backward fill, then zero
+                    # This allows training even when enhanced features are sparse
                     enhanced_cols = [
                         'pending_tx_count', 'unique_addresses', 'tx_per_second',
                         'gas_utilization_ratio', 'avg_tx_gas', 'large_tx_ratio',
@@ -118,7 +138,8 @@ class GasFeatureEngineer:
                     ]
                     for col in enhanced_cols:
                         if col in df.columns:
-                            df[col] = df[col].ffill().fillna(0)
+                            # Forward fill, then backward fill, then zero
+                            df[col] = df[col].ffill().bfill().fillna(0)
                     
                     print(f"✅ Joined {len(onchain_data)} onchain feature records")
                 else:

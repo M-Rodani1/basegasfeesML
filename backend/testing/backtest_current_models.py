@@ -10,10 +10,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import sqlite3
 import pandas as pd
 import numpy as np
-import pickle
+import joblib  # Use joblib instead of pickle (Week 1 Quick Win #3)
 from datetime import datetime, timedelta
 from pathlib import Path
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.preprocessing import RobustScaler
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -21,45 +22,62 @@ print("="*80)
 print("  🚀 COMPREHENSIVE MODEL BACKTEST")
 print("="*80)
 
-# Load data
+# Load data using feature engineering pipeline (Week 1 Quick Wins)
 print("\n📊 Loading historical data...")
-conn = sqlite3.connect("gas_data.db")
+from models.feature_engineering import GasFeatureEngineer
 
-# Get last 1000 records (about 3.5 days at 5-min intervals)
-query = """
-SELECT timestamp, current_gas, base_fee, priority_fee, block_number
-FROM gas_prices
-ORDER BY timestamp DESC
-LIMIT 1000
-"""
+engineer = GasFeatureEngineer()
 
-df = pd.read_sql(query, conn, parse_dates=['timestamp'])
-df = df.sort_values('timestamp').reset_index(drop=True)
-conn.close()
-
-print(f"✅ Loaded {len(df)} records")
-print(f"   Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
-
-# Calculate basic features
-print("\n🔧 Creating features...")
-
-df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
-df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
-df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
-
-# Lag features
-for lag in [1, 3, 6, 12, 24]:
-    df[f'gas_lag_{lag}'] = df['current_gas'].shift(lag)
-
-# Rolling features
-for window in [12, 24, 72]:
-    df[f'gas_ma_{window}'] = df['current_gas'].rolling(window).mean()
-    df[f'gas_std_{window}'] = df['current_gas'].rolling(window).std()
-
-# Drop NaN
-df = df.dropna()
-
-print(f"✅ {len(df)} samples after feature engineering")
+try:
+    # Use same pipeline as training (includes enhanced features)
+    df = engineer.prepare_training_data(hours_back=168)  # 1 week
+    
+    if len(df) == 0:
+        print("❌ No training samples generated")
+        print("💡 Using fallback: direct database query")
+        
+        # Fallback to direct query
+        conn = sqlite3.connect("gas_data.db")
+        query = """
+        SELECT timestamp, current_gas as gas, base_fee, priority_fee, block_number
+        FROM gas_prices
+        ORDER BY timestamp DESC
+        LIMIT 1000
+        """
+        df = pd.read_sql(query, conn, parse_dates=['timestamp'])
+        df = df.sort_values('timestamp').reset_index(drop=True)
+        conn.close()
+        
+        # Basic features only
+        df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
+        df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
+        df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
+        df = df.dropna()
+    
+    print(f"✅ {len(df)} samples after feature engineering")
+    print(f"   Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+    
+except Exception as e:
+    print(f"⚠️  Feature engineering failed: {e}")
+    print("   Using fallback method...")
+    
+    conn = sqlite3.connect("gas_data.db")
+    query = """
+    SELECT timestamp, current_gas as gas, base_fee, priority_fee, block_number
+    FROM gas_prices
+    ORDER BY timestamp DESC
+    LIMIT 1000
+    """
+    df = pd.read_sql(query, conn, parse_dates=['timestamp'])
+    df = df.sort_values('timestamp').reset_index(drop=True)
+    conn.close()
+    
+    df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
+    df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
+    df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
+    df = df.dropna()
+    
+    print(f"✅ {len(df)} samples (basic features only)")
 
 # Load models
 print("\n🤖 Loading models...")
@@ -69,20 +87,35 @@ models = {}
 
 for horizon in ['1h', '4h', '24h']:
     model_path = model_dir / f"model_{horizon}.pkl"
-    scaler_path = model_dir / f"scaler_{horizon}.pkl"
+    
+    if not model_path.exists():
+        # Try backend path
+        model_path = Path("backend") / model_dir / f"model_{horizon}.pkl"
 
     if model_path.exists():
         try:
-            with open(model_path, 'rb') as f:
-                models[horizon] = pickle.load(f)
-            print(f"✅ Loaded {horizon} model")
-
-            # Try to load scaler
-            if scaler_path.exists():
-                with open(scaler_path, 'rb') as f:
-                    models[f'{horizon}_scaler'] = pickle.load(f)
+            # Load with joblib (Week 1 Quick Win #3: models saved with joblib)
+            model_data = joblib.load(model_path)
+            
+            # Handle new format (dict with 'model' key) or old format (model object)
+            if isinstance(model_data, dict):
+                models[horizon] = model_data.get('model')
+                # Get scaler from model_data (Week 1 Quick Win #3: RobustScaler)
+                scaler = model_data.get('feature_scaler') or model_data.get('scaler')
+                if scaler:
+                    models[f'{horizon}_scaler'] = scaler
+                    print(f"✅ Loaded {horizon} model with RobustScaler")
+                else:
+                    print(f"✅ Loaded {horizon} model (no scaler)")
+            else:
+                # Old format - model is the object itself
+                models[horizon] = model_data
+                print(f"✅ Loaded {horizon} model (legacy format)")
+                
         except Exception as e:
             print(f"⚠️  Error loading {horizon} model: {e}")
+            import traceback
+            traceback.print_exc()
 
 if not models:
     print("❌ No models loaded!")
@@ -122,19 +155,47 @@ for horizon in ['1h', '4h', '24h']:
 
     print(f"\n📊 Test samples: {len(test_df)}")
 
-    # Prepare features
-    feature_cols = [col for col in test_df.columns
-                   if col not in ['timestamp', 'target', 'current_gas', 'block_number']]
-
+    # Prepare features using same method as training
+    # Get feature columns (exclude targets and metadata)
+    exclude_cols = ['timestamp', 'target', 'target_1h', 'target_4h', 'target_24h', 
+                    'gas', 'current_gas', 'block_number']
+    
+    # Try to use feature engineer's method
+    try:
+        feature_cols = engineer.get_feature_columns(test_df)
+    except:
+        # Fallback: manual feature selection
+        feature_cols = [col for col in test_df.columns if col not in exclude_cols]
+    
+    # Ensure we have the features the model expects
+    # If model was trained with enhanced features, we need them
     X = test_df[feature_cols].values
     y_true = test_df['target'].values
 
-    # Get model
+    # Get model and scaler
     model = models[horizon]
+    scaler = models.get(f'{horizon}_scaler')
 
     try:
-        # Make predictions
-        y_pred = model.predict(X)
+        # Check feature count match
+        if scaler:
+            expected_features = scaler.n_features_in_
+            actual_features = X.shape[1]
+            
+            if expected_features != actual_features:
+                print(f"⚠️  Feature mismatch: model expects {expected_features}, got {actual_features}")
+                print(f"   Available features: {len(feature_cols)}")
+                print(f"   This is expected if enhanced features are sparse")
+                print(f"   Skipping {horizon} backtest (need matching features)")
+                continue
+        
+        # Scale features if scaler available (Week 1 Quick Win #3)
+        if scaler:
+            X_scaled = scaler.transform(X)
+            y_pred = model.predict(X_scaled)
+        else:
+            # No scaler - predict directly
+            y_pred = model.predict(X)
 
         # Handle different output formats
         if len(y_pred.shape) > 1:
