@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { connectWallet } from '../../src/utils/wallet';
+import { connectWallet } from '../../utils/wallet';
 
 interface OnboardingFlowProps {
   onComplete: () => void;
