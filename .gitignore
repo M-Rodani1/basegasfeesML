@@ -23,6 +23,9 @@ backend/.venv/
 backend/venv/
 backend/*.pkl
 backend/models/saved_models/*
+!backend/models/saved_models/model_*.pkl
+!backend/models/saved_models/scaler_*.pkl
+!backend/models/saved_models/feature_names.pkl
 !backend/models/saved_models/spike_detector*.pkl
 !backend/models/saved_models/.gitkeep
 backend/gas_data.db
