@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CurrentGasData } from '../types';
-import { fetchCurrentGas } from '../src/api/gasApi';
-import LoadingSpinner from './components/LoadingSpinner';
+import { fetchCurrentGas } from '../api/gasApi';
+import LoadingSpinner from './LoadingSpinner';
 
 const GasLeaderboard: React.FC = () => {
   const [currentGas, setCurrentGas] = useState<CurrentGasData | null>(null);
