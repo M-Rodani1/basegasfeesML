@@ -139,7 +139,7 @@ class GasFeatureEngineer:
                     for col in enhanced_cols:
                         if col in df.columns:
                             # Forward fill, then backward fill, then zero
-                            df[col] = df[col].ffill().bfill().fillna(0)
+                            df[col] = df[col].ffill().bfill().fillna(0).infer_objects(copy=False)
                     
                     print(f"✅ Joined {len(onchain_data)} onchain feature records")
                 else:

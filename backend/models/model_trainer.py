@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import Ridge
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit  # Week 1 Quick Win #4: Time-series CV
 from sklearn.preprocessing import RobustScaler  # Week 1 Quick Win #3: RobustScaler for outlier handling
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import joblib
@@ -78,10 +78,14 @@ class GasModelTrainer:
                 print(f"⚠️  Not enough valid data for {horizon} ({len(X_clean)} samples), skipping...")
                 continue
             
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X_clean, y_clean, test_size=0.2, shuffle=False  # Time series - don't shuffle!
-            )
+            # Week 1 Quick Win #4: Use time-series cross-validation for better evaluation
+            # Time-series data requires temporal ordering - can't shuffle!
+            # Split: 80% train, 20% test (maintain temporal order)
+            split_idx = int(len(X_clean) * 0.8)
+            X_train = X_clean.iloc[:split_idx]
+            X_test = X_clean.iloc[split_idx:]
+            y_train = y_clean.iloc[:split_idx]
+            y_test = y_clean.iloc[split_idx:]
             
             # Week 1 Quick Win #3: Scale features with RobustScaler (handles outliers better)
             # RobustScaler uses median and IQR instead of mean/std, making it robust to gas price spikes
@@ -94,15 +98,45 @@ class GasModelTrainer:
             
             print(f"✅ Features scaled with RobustScaler (robust to outliers)")
             
+            # Week 1 Quick Win #4: Time-series cross-validation for model evaluation
+            print(f"📊 Running time-series cross-validation...")
+            cv_scores = self._time_series_cross_validate(X_train_scaled, y_train)
+            print(f"   CV R² scores: {cv_scores['r2_mean']:.4f} ± {cv_scores['r2_std']:.4f}")
+            
             # Train multiple model types (on scaled features)
             models = self._train_model_variants(X_train_scaled, y_train, X_test_scaled, y_test)
             
-            # Save best model
+            # Week 1 Quick Win #5: Train stacking ensemble
+            print("\n📊 Training Stacking Ensemble...")
+            from models.stacking_ensemble import StackingEnsemble
+            stacking = StackingEnsemble()
+            stacking.train(X_train_scaled, y_train, X_test_scaled, y_test)
+            
+            # Evaluate stacking ensemble
+            stacking_metrics = stacking.evaluate(X_test_scaled, y_test)
+            print(f"   Stacking Ensemble R²: {stacking_metrics['r2']:.4f}")
+            print(f"   Stacking Ensemble MAE: {stacking_metrics['mae']:.6f}")
+            
+            # Add stacking to models list
+            models.append({
+                'name': 'StackingEnsemble',
+                'model': stacking,
+                'metrics': stacking_metrics
+            })
+            
+            # Save stacking ensemble
+            stacking.save(horizon=horizon)
+            
+            # Save best model (may be stacking or single model)
             best_model = self._select_best_model(models, horizon)
             
             results[horizon] = {
                 'models': models,
-                'best': best_model
+                'best': best_model,
+                'stacking': {
+                    'metrics': stacking_metrics,
+                    'ensemble': stacking
+                }
             }
             
             print(f"✅ Best model for {horizon}: {best_model['name']}")
@@ -185,6 +219,53 @@ class GasModelTrainer:
             'rmse': rmse,
             'r2': r2,
             'directional_accuracy': directional_accuracy
+        }
+    
+    def _time_series_cross_validate(self, X, y, n_splits=5):
+        """
+        Week 1 Quick Win #4: Time-series cross-validation
+        
+        Uses TimeSeriesSplit to properly evaluate time-series models
+        without data leakage from future to past.
+        
+        Args:
+            X: Feature matrix (already scaled)
+            y: Target values
+            n_splits: Number of CV folds
+            
+        Returns:
+            Dictionary with mean and std of CV scores
+        """
+        tscv = TimeSeriesSplit(n_splits=n_splits)
+        
+        # Test with a simple model to get CV scores
+        test_model = RandomForestRegressor(
+            n_estimators=50,  # Smaller for faster CV
+            max_depth=10,
+            random_state=42,
+            n_jobs=-1
+        )
+        
+        cv_r2_scores = cross_val_score(
+            test_model, X, y,
+            cv=tscv,
+            scoring='r2',
+            n_jobs=-1
+        )
+        
+        cv_mae_scores = -cross_val_score(
+            test_model, X, y,
+            cv=tscv,
+            scoring='neg_mean_absolute_error',
+            n_jobs=-1
+        )
+        
+        return {
+            'r2_mean': np.mean(cv_r2_scores),
+            'r2_std': np.std(cv_r2_scores),
+            'mae_mean': np.mean(cv_mae_scores),
+            'mae_std': np.std(cv_mae_scores),
+            'n_splits': n_splits
         }
     
     def _select_best_model(self, models, horizon):

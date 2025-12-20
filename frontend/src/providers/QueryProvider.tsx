@@ -3,9 +3,17 @@
  * Wraps the app with React Query for data fetching, caching, and synchronization
  */
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+// Lazy load devtools - only in dev mode and if available
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import('@tanstack/react-query-devtools')
+        .then((mod) => ({ default: mod.ReactQueryDevtools }))
+        .catch(() => ({ default: () => null }))
+    )
+  : null;
 
 // Create a client with default options
 const queryClient = new QueryClient({
@@ -32,7 +40,11 @@ export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      {import.meta.env.DEV && ReactQueryDevtools && (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Suspense>
+      )}
     </QueryClientProvider>
   );
 };

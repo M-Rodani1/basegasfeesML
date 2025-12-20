@@ -53,17 +53,24 @@ print(f"   Columns present: {len(found_cols)}/{len(enhanced_cols)}")
 if found_cols:
     print(f"   ✅ {', '.join(found_cols)}")
 
-# Training readiness
-needed = 100
-ready = recent_24h >= needed
+# Training readiness (Optimal: 1,000+ records)
+needed_optimal = 1000
+needed_minimum = 100
+ready_optimal = recent_24h >= needed_optimal
+ready_minimum = recent_24h >= needed_minimum
+
 print(f"\n🎯 Training Readiness:")
-print(f"   Need: {needed}+ recent records")
+print(f"   Minimum: {needed_minimum}+ records (can train now, limited quality)")
+print(f"   Optimal: {needed_optimal}+ records (best results)")
 print(f"   Have: {recent_24h} records")
-print(f"   Status: {'✅ READY' if ready else '⏳ COLLECTING'}")
-if not ready:
-    remaining = needed - recent_24h
-    if recent_1h > 0:
-        hours_needed = remaining / recent_1h
-        print(f"   Estimated time: ~{hours_needed:.1f} hours at current rate")
+print(f"   Status: {'✅ OPTIMAL - Ready!' if ready_optimal else '✅ MINIMUM - Can train' if ready_minimum else '⏳ COLLECTING'}")
+if not ready_optimal:
+    remaining = needed_optimal - recent_24h
+    # Calculate based on 1 record per minute = 60 records per hour (standard rate)
+    # Use standard rate for consistency
+    records_per_hour = 60
+    hours_needed = remaining / records_per_hour
+    days_needed = hours_needed / 24
+    print(f"   Time to optimal: ~{hours_needed:.1f} hours (~{days_needed:.2f} days) at 1 record/min rate")
 
 conn.close()

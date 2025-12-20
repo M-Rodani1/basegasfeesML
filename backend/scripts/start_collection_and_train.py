@@ -49,7 +49,7 @@ def check_data_availability():
         'gas_prices': gas_count,
         'onchain_features': onchain_count,
         'recent_onchain': recent_onchain,
-        'ready_for_training': recent_onchain >= 100  # Need at least 100 recent records
+        'ready_for_training': recent_onchain >= 1000  # Optimal: Need 1,000+ recent records for best results
     }
 
 
@@ -74,7 +74,7 @@ def monitor_collection(collector_service, check_interval=300):  # Check every 5 
             print(f"   📊 Total onchain_features: {stats['onchain_features']}")
             print(f"   📊 Recent (24h): {stats['recent_onchain']}")
             print(f"   📊 Collection rate: {stats['recent_onchain'] - last_count} records/5min")
-            print(f"   ✅ Ready for training: {'Yes' if stats['ready_for_training'] else 'No (need 100+ records)'}")
+            print(f"   ✅ Ready for training: {'Yes' if stats['ready_for_training'] else 'No (need 1,000+ records for optimal)'}")
             print()
             
             last_count = stats['recent_onchain']
@@ -103,7 +103,7 @@ def start_collection():
     print(f"   Gas Prices: {stats['gas_prices']:,} records")
     print(f"   OnChain Features: {stats['onchain_features']:,} records")
     print(f"   Recent (24h): {stats['recent_onchain']:,} records")
-    print(f"   Ready for Training: {'✅ Yes' if stats['ready_for_training'] else '❌ No (need 100+ records)'}")
+    print(f"   Ready for Training: {'✅ Yes' if stats['ready_for_training'] else '❌ No (need 1,000+ records for optimal)'}")
     
     if stats['ready_for_training']:
         print("\n✅ Already have enough data! Proceeding to training...")
@@ -113,7 +113,7 @@ def start_collection():
     print(f"\n📦 Starting collector service...")
     print(f"   Interval: {os.getenv('COLLECTION_INTERVAL', '60')} seconds (1 minute)")
     print(f"   This will collect enhanced congestion features")
-    print(f"   Target: 100+ records (approximately 2-4 hours)")
+    print(f"   Target: 1,000+ records (approximately 16-17 hours for optimal training)")
     
     collector = OnChainCollectorService(interval_seconds=60)  # 1 minute
     

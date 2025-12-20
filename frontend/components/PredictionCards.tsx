@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchPredictions, fetchCurrentGas } from '../src/api/gasApi';
 import LoadingSpinner from './LoadingSpinner';
 import PredictionExplanation from './PredictionExplanation';
@@ -26,7 +26,34 @@ const PredictionCards: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState<string | null>(null);
 
-  const loadData = async () => {
+  // All hooks must be called before any early returns
+  const getColorClasses = useCallback((color: string) => {
+    switch (color) {
+      case 'red':
+        return 'border-red-500 bg-red-500/10';
+      case 'green':
+        return 'border-green-500 bg-green-500/10';
+      case 'yellow':
+        return 'border-yellow-500 bg-yellow-500/10';
+      default:
+        return 'border-gray-600 bg-gray-800';
+    }
+  }, []);
+
+  const getTextColor = useCallback((color: string) => {
+    switch (color) {
+      case 'red':
+        return 'text-red-400';
+      case 'green':
+        return 'text-green-400';
+      case 'yellow':
+        return 'text-yellow-400';
+      default:
+        return 'text-gray-400';
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -129,13 +156,13 @@ const PredictionCards: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [loadData]);
 
   if (loading && cards.length === 0) {
     return (
@@ -162,32 +189,6 @@ const PredictionCards: React.FC = () => {
       </div>
     );
   }
-
-  const getColorClasses = (color: string) => {
-    switch (color) {
-      case 'red':
-        return 'border-red-500 bg-red-500/10';
-      case 'green':
-        return 'border-green-500 bg-green-500/10';
-      case 'yellow':
-        return 'border-yellow-500 bg-yellow-500/10';
-      default:
-        return 'border-gray-600 bg-gray-800';
-    }
-  };
-
-  const getTextColor = (color: string) => {
-    switch (color) {
-      case 'red':
-        return 'text-red-400';
-      case 'green':
-        return 'text-green-400';
-      case 'yellow':
-        return 'text-yellow-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
 
   return (
     <>

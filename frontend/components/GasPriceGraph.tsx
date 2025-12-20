@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { GraphDataPoint } from '../types';
 import { fetchPredictions, fetchCurrentGas } from '../src/api/gasApi';
@@ -13,7 +13,7 @@ const GasPriceGraph: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentGas, setCurrentGas] = useState<number | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,7 +60,7 @@ const GasPriceGraph: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeScale]);
 
   useEffect(() => {
     loadData();
@@ -68,7 +68,7 @@ const GasPriceGraph: React.FC = () => {
     // Auto-refresh every 30 seconds
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
-  }, [timeScale]);
+  }, [loadData]);
 
   if (loading && data.length === 0) {
     return (
