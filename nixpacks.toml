@@ -8,7 +8,4 @@ cmds = [
 ]
 
 [start]
-cmd = "gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120"
-
-[variables]
-PYTHONPATH = "/app"
+cmd = "bash start.sh"
