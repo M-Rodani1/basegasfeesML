@@ -39,11 +39,12 @@ def cron_retrain_models():
 
         # Check if we have enough data
         from sqlalchemy import func
+        from data.database import GasPrice, OnChainFeatures
         session = db._get_session()
 
         try:
-            gas_count = session.query(func.count()).select_from(db.GasPrice).scalar()
-            onchain_count = session.query(func.count()).select_from(db.OnChainFeatures).scalar()
+            gas_count = session.query(func.count()).select_from(GasPrice).scalar()
+            onchain_count = session.query(func.count()).select_from(OnChainFeatures).scalar()
 
             logger.info(f"Data available: {gas_count} gas prices, {onchain_count} onchain features")
 
@@ -171,8 +172,9 @@ def model_stats():
         try:
             # Get data collection stats
             from sqlalchemy import func
-            gas_count = session.query(func.count()).select_from(db.GasPrice).scalar()
-            onchain_count = session.query(func.count()).select_from(db.OnChainFeatures).scalar()
+            from data.database import GasPrice, OnChainFeatures
+            gas_count = session.query(func.count()).select_from(GasPrice).scalar()
+            onchain_count = session.query(func.count()).select_from(OnChainFeatures).scalar()
 
             # Get last training time from model files
             import glob
@@ -241,14 +243,15 @@ def cron_status():
         try:
             # Get data collection stats
             from sqlalchemy import func
-            gas_count = session.query(func.count()).select_from(db.GasPrice).scalar()
-            onchain_count = session.query(func.count()).select_from(db.OnChainFeatures).scalar()
+            from data.database import GasPrice, OnChainFeatures
+            gas_count = session.query(func.count()).select_from(GasPrice).scalar()
+            onchain_count = session.query(func.count()).select_from(OnChainFeatures).scalar()
 
             # Get latest gas price timestamp
-            latest_gas = session.query(func.max(db.GasPrice.timestamp)).scalar()
+            latest_gas = session.query(func.max(GasPrice.timestamp)).scalar()
 
             # Get latest onchain feature timestamp
-            latest_onchain = session.query(func.max(db.OnChainFeatures.timestamp)).scalar()
+            latest_onchain = session.query(func.max(OnChainFeatures.timestamp)).scalar()
 
             # Check model files
             import glob
