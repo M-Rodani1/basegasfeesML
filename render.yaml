@@ -1,18 +1,12 @@
-databases:
-  - name: gas-optimizer-db
-    plan: free
-    databaseName: gas_data
-    user: gas_user
-
 services:
-  # Main API server with background data collection
+  # Main API server (Flask with Gunicorn)
   - type: web
     name: base-gas-optimizer-api
     env: python
     region: oregon
     plan: free
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && python app.py
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -20,8 +14,28 @@ services:
         value: 5001
       - key: DEBUG
         value: false
+      - key: USE_WORKER_PROCESS
+        value: true  # Disables background threads, uses separate worker instead
+      - key: BASE_RPC_URL
+        value: https://mainnet.base.org
+      - key: BASE_CHAIN_ID
+        value: 8453
+
+  # Background worker for data collection
+  - type: worker
+    name: base-gas-collector-worker
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python3 worker.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: false
       - key: COLLECTION_INTERVAL
-        value: 60  # 1 minute (Week 1 Quick Win #1)
+        value: 60  # 1 minute
       - key: ENABLE_DATA_COLLECTION
         value: true
       - key: ENABLE_ONCHAIN_COLLECTION
@@ -30,7 +44,3 @@ services:
         value: https://mainnet.base.org
       - key: BASE_CHAIN_ID
         value: 8453
-      - key: DATABASE_URL
-        fromDatabase:
-          name: gas-optimizer-db
-          property: connectionString
