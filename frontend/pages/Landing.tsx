@@ -30,134 +30,176 @@ const Landing: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xl font-bold text-white">Base Gas Optimiser</span>
-              <span className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white text-xs font-bold rounded-full">
-                Hackathon Winner
-              </span>
+      <nav style={{
+        position: 'fixed',
+        top: 0,
+        width: '100%',
+        background: 'var(--surface)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border)',
+        zIndex: 50
+      }}>
+        <div className="container" style={{ padding: 'var(--space-lg) var(--space-xl)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+              <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>Base Gas Optimiser</span>
+              <span className="badge badge-accent">Hackathon Winner</span>
             </div>
-            <div className="flex items-center gap-6">
-              <Link to="/pricing" className="text-gray-300 hover:text-white transition">
-                Pricing
-              </Link>
-              <Link
-                to="/app"
-                className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-lg font-semibold hover:shadow-lg transition"
-              >
-                Launch App
-              </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-lg)' }}>
+              <Link to="/pricing" className="btn btn-ghost">Pricing</Link>
+              <Link to="/app" className="btn btn-primary">Launch App</Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center px-4 pt-20">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Award Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 border border-cyan-500/30 rounded-full mb-6">
-            <span className="text-2xl">🏆</span>
-            <span className="text-cyan-400 font-semibold">AI Hack Nation 2024 Winner</span>
-          </div>
+      {/* Hero Section - 2 Column Layout */}
+      <section className="section" style={{ paddingTop: '120px', minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 'var(--space-3xl)', alignItems: 'center' }}>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Save Up to 40% on{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
-              Base Gas Fees
-            </span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
-            AI-powered predictions tell you exactly when to transact on Base
-          </p>
-
-          <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
-            Built in 96 hours. Trusted by thousands. Backed by Coinbase.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              to="/app"
-              className="inline-block px-10 py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-lg text-lg font-bold hover:shadow-xl transition-all transform hover:scale-105"
-            >
-              Get Started Free →
-            </Link>
-            <a
-              href="#how-it-works"
-              className="inline-block px-10 py-4 bg-gray-800 text-white rounded-lg text-lg font-semibold hover:bg-gray-700 transition-all border border-gray-700"
-            >
-              See How It Works
-            </a>
-          </div>
-
-          {/* Live Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-6 md:gap-12 max-w-3xl mx-auto">
-            <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-              <div className={`text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300 ${statsLoading ? 'animate-pulse' : ''}`}>
-                ${stats.total_saved_k}K+
+            {/* Left: Hero Content */}
+            <div>
+              <div className="badge badge-accent" style={{ marginBottom: 'var(--space-lg)' }}>
+                <span>🏆</span> AI Hack Nation 2024 Winner
               </div>
-              <div className="text-gray-400 text-sm mt-2">Gas Fees Saved</div>
+
+              <h1 style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1.1, marginBottom: 'var(--space-lg)' }}>
+                Save Up to 40% on{' '}
+                <span style={{ color: 'var(--accent)' }}>Base Gas Fees</span>
+              </h1>
+
+              <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)', lineHeight: 1.6 }}>
+                AI-powered predictions tell you exactly when to transact on Base
+              </p>
+
+              <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: 'var(--space-2xl)' }}>
+                Built in 96 hours. Trusted by thousands. Backed by Coinbase.
+              </p>
+
+              <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap', marginBottom: 'var(--space-2xl)' }}>
+                <Link to="/app" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}>
+                  Get Started Free →
+                </Link>
+                <a href="#how-it-works" className="btn btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}>
+                  See How It Works
+                </a>
+              </div>
+
+              {/* Trust Indicators */}
+              <div style={{ display: 'flex', gap: 'var(--space-xl)', marginTop: 'var(--space-2xl)', paddingTop: 'var(--space-xl)', borderTop: '1px solid var(--border-subtle)' }}>
+                <div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
+                    {statsLoading ? '...' : `$${stats.total_saved_k}K+`}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Gas Saved</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
+                    {statsLoading ? '...' : `${stats.accuracy_percent}%`}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Accuracy</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
+                    {statsLoading ? '...' : `${stats.predictions_k}K+`}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Predictions</div>
+                </div>
+              </div>
             </div>
-            <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-              <div className={`text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-300 ${statsLoading ? 'animate-pulse' : ''}`}>
-                {stats.accuracy_percent}%
+
+            {/* Right: Dashboard Preview in Browser Frame */}
+            <div style={{ position: 'relative' }}>
+              <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--surface-2)' }}>
+                {/* Browser Chrome */}
+                <div style={{ padding: 'var(--space-md)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-xs)' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#f59e0b' }}></div>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10b981' }}></div>
+                  </div>
+                  <div style={{ flex: 1, background: 'var(--surface)', padding: 'var(--space-xs) var(--space-md)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    basegasfeesml.pages.dev/app
+                  </div>
+                </div>
+
+                {/* Dashboard Preview Content */}
+                <div style={{ padding: 'var(--space-xl)', background: 'var(--bg)' }}>
+                  {/* Mini KPI Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
+                    <div className="card" style={{ padding: 'var(--space-md)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xs)' }}>Current Gas</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>0.0048 gwei</div>
+                      <span className="badge badge-success" style={{ marginTop: 'var(--space-xs)', fontSize: '0.625rem' }}>
+                        <span className="status-dot success"></span> Low
+                      </span>
+                    </div>
+                    <div className="card" style={{ padding: 'var(--space-md)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xs)' }}>1h Forecast</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>0.0052 gwei</div>
+                      <span className="badge badge-warning" style={{ marginTop: 'var(--space-xs)', fontSize: '0.625rem' }}>
+                        <span className="status-dot warning"></span> Rising
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Mini Chart Placeholder */}
+                  <div className="card" style={{ padding: 'var(--space-lg)', height: '180px', display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+                    {[40, 60, 55, 70, 45, 50, 35, 60, 55, 48, 42, 38].map((height, i) => (
+                      <div key={i} style={{ flex: 1, background: 'var(--accent-light)', borderRadius: '2px', height: `${height}%`, transition: 'all 0.3s' }}></div>
+                    ))}
+                  </div>
+
+                  {/* Recommendation */}
+                  <div className="card" style={{ marginTop: 'var(--space-md)', padding: 'var(--space-md)', background: 'var(--success-bg)', border: '1px solid var(--success-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                      <span style={{ fontSize: '1.5rem' }}>✅</span>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--success)' }}>
+                        Good time to transact - Gas is 25% below average
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-gray-400 text-sm mt-2">Prediction Accuracy</div>
-            </div>
-            <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-              <div className={`text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 ${statsLoading ? 'animate-pulse' : ''}`}>
-                {stats.predictions_k}K+
-              </div>
-              <div className="text-gray-400 text-sm mt-2">Predictions Made</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-4 bg-gray-800/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              How It Works
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+      <section id="how-it-works" className="section" style={{ background: 'var(--surface)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
+            <h2>How It Works</h2>
+            <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', marginTop: 'var(--space-md)' }}>
               Machine learning models trained on real Base network data predict optimal transaction times
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 flex items-center justify-center text-3xl">
-                📊
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">1. Real-Time Analysis</h3>
-              <p className="text-gray-400 leading-relaxed">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-xl)' }}>
+            <div className="card" style={{ padding: 'var(--space-xl)', textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>📊</div>
+              <h3 style={{ marginBottom: 'var(--space-md)' }}>1. Real-Time Analysis</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                 Our system monitors Base network activity every minute, tracking gas prices, congestion, and transaction patterns
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 flex items-center justify-center text-3xl">
-                🤖
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">2. AI Predictions</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Machine learning models predict gas prices for the next 1, 4, and 24 hours with 95% directional accuracy
+            <div className="card" style={{ padding: 'var(--space-xl)', textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>🤖</div>
+              <h3 style={{ marginBottom: 'var(--space-md)' }}>2. AI Predictions</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                Machine learning models predict gas prices for the next 1, 4, and 24 hours with high accuracy
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 flex items-center justify-center text-3xl">
-                💰
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">3. Save Money</h3>
-              <p className="text-gray-400 leading-relaxed">
+            <div className="card" style={{ padding: 'var(--space-xl)', textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>💰</div>
+              <h3 style={{ marginBottom: 'var(--space-md)' }}>3. Save Money</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                 Get instant recommendations on when to transact, saving up to 40% on gas fees compared to peak times
               </p>
             </div>
@@ -165,143 +207,59 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 px-4 bg-gray-900">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Everything You Need
-            </h2>
-            <p className="text-xl text-gray-400">
+      {/* Features Grid - Compact */}
+      <section className="section">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
+            <h2>Everything You Need</h2>
+            <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>
               Powerful tools to optimize your Base transactions
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-cyan-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">🚦</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Traffic Light System</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Instant visual indicator shows if NOW is a good time to transact - green means go, red means wait
-              </p>
-            </div>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-emerald-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">⏰</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Best Time Widget</h3>
-              <p className="text-gray-400 leading-relaxed">
-                See exactly when gas is cheapest today - plan your transactions around the lowest-cost hours
-              </p>
-            </div>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-cyan-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">📈</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Price Predictions</h3>
-              <p className="text-gray-400 leading-relaxed">
-                ML-powered forecasts for 1h, 4h, and 24h ahead - know what's coming before it happens
-              </p>
-            </div>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-emerald-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">🗓️</div>
-              <h3 className="text-2xl font-bold text-white mb-3">24-Hour Heatmap</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Interactive hourly breakdown shows gas price patterns throughout the day
-              </p>
-            </div>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-cyan-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">💸</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Savings Calculator</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Calculate exactly how much you could save by waiting for optimal gas prices
-              </p>
-            </div>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 hover:border-emerald-500/50 transition-all hover:transform hover:scale-105">
-              <div className="text-5xl mb-4">⚡</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Real-Time Updates</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Live data refreshed every 30 seconds - always know the current state of Base network
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section className="py-24 px-4 bg-gradient-to-br from-cyan-900/20 via-gray-900 to-emerald-900/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Built at AI Hack Nation 2024
-            </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Created in just 96 hours by a team from Queen Mary University of London, in partnership with Coinbase
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-4xl">🏆</div>
-                <div>
-                  <h4 className="text-xl font-bold text-white">Hackathon Winner</h4>
-                  <p className="text-gray-400">AI Hack Nation 2024</p>
-                </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-lg)' }}>
+            {[
+              { icon: '🚦', title: 'Traffic Light System', desc: 'Instant visual indicator shows if NOW is a good time to transact' },
+              { icon: '⏰', title: 'Best Time Widget', desc: 'See exactly when gas is cheapest today' },
+              { icon: '📈', title: 'Price Predictions', desc: 'ML-powered forecasts for 1h, 4h, and 24h ahead' },
+              { icon: '🗓️', title: '24-Hour Heatmap', desc: 'Interactive hourly breakdown shows gas price patterns' },
+              { icon: '💸', title: 'Savings Calculator', desc: 'Calculate exactly how much you could save' },
+              { icon: '⚡', title: 'Real-Time Updates', desc: 'Live data refreshed every 30 seconds' }
+            ].map((feature, i) => (
+              <div key={i} className="card" style={{ padding: 'var(--space-lg)' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: 'var(--space-md)' }}>{feature.icon}</div>
+                <h4 style={{ marginBottom: 'var(--space-sm)' }}>{feature.title}</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6 }}>{feature.desc}</p>
               </div>
-              <p className="text-gray-300">
-                Selected as the winning project out of dozens of submissions for innovation and real-world impact
-              </p>
-            </div>
-
-            <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-4xl">🤝</div>
-                <div>
-                  <h4 className="text-xl font-bold text-white">Backed by Coinbase</h4>
-                  <p className="text-gray-400">In partnership with Base</p>
-                </div>
-              </div>
-              <p className="text-gray-300">
-                Developed with support from Coinbase and the Base network team, focused on solving real user problems
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 px-4 bg-gray-900">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Stop Overpaying for Gas
-          </h2>
-          <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto">
+      <section className="section" style={{ background: 'var(--surface)', textAlign: 'center' }}>
+        <div className="container" style={{ maxWidth: '800px' }}>
+          <h2 style={{ marginBottom: 'var(--space-lg)' }}>Stop Overpaying for Gas</h2>
+          <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-2xl)' }}>
             Join thousands of Base users saving money with AI-powered gas predictions
           </p>
-
-          <Link
-            to="/app"
-            className="inline-block px-12 py-5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-xl text-xl font-bold hover:shadow-2xl transition-all transform hover:scale-105"
-          >
+          <Link to="/app" className="btn btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.25rem' }}>
             Start Saving Now - It's Free →
           </Link>
-
-          <p className="text-gray-500 mt-6 text-sm">
+          <p style={{ marginTop: 'var(--space-lg)', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
             No wallet connection required • No sign-up • Instant access
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-gray-950 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-gray-400 text-sm">
+      <footer style={{ padding: 'var(--space-2xl) 0', background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-lg)' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               © 2024 Base Gas Optimiser. Built at AI Hack Nation 2024.
             </div>
-            <div className="flex gap-6 text-gray-400 text-sm">
+            <div style={{ display: 'flex', gap: 'var(--space-lg)', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               <span>Queen Mary University of London</span>
               <span>•</span>
               <span>Powered by Base</span>
