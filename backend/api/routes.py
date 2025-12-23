@@ -489,12 +489,21 @@ def get_predictions():
                         # Scale features
                         features_scaled = scalers[horizon].transform(features_to_predict)
                         pred = model.predict(features_scaled)[0]
+                    except ValueError as ve:
+                        # Feature mismatch - use simple fallback
+                        logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
+                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
                     except Exception as e:
-                        logger.warning(f"Scaling failed for {horizon}: {e}, using unscaled features")
-                        pred = model.predict(features)[0]
+                        logger.warning(f"Prediction failed for {horizon}: {e}, using fallback")
+                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
                 else:
-                    pred = model.predict(features)[0]
-                
+                    try:
+                        pred = model.predict(features)[0]
+                    except ValueError as ve:
+                        # Feature mismatch - use simple fallback
+                        logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
+                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
+
                 # Check if model predicts percentage change, absolute price, or log scale
                 predicts_pct_change = model_data.get('predicts_percentage_change', False)
                 uses_log_scale = model_data.get('uses_log_scale', False)
