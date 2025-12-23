@@ -26,13 +26,13 @@ def post_fork(server, worker):
                 logger.info("STARTING DATA COLLECTION (Background Threads)")
                 logger.info("="*60)
 
-                # Initialize services
-                gas_service = GasCollectorService()
-                onchain_service = OnChainCollectorService()
+                # Initialize services (no signal handlers in background threads)
+                gas_service = GasCollectorService(register_signals=False)
+                onchain_service = OnChainCollectorService(register_signals=False)
 
                 # Start collection loops
-                gas_service.start_collection()
-                onchain_service.start_collection()
+                gas_service.start()
+                onchain_service.start()
 
                 logger.info("Data collection services started successfully")
                 logger.info("="*60)

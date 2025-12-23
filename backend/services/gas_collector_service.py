@@ -34,10 +34,11 @@ logger = logging.getLogger(__name__)
 class GasCollectorService:
     """Background service for continuous gas price collection"""
 
-    def __init__(self, interval_seconds=300):
+    def __init__(self, interval_seconds=300, register_signals=True):
         """
         Args:
             interval_seconds: Collection interval (default 300 = 5 minutes)
+            register_signals: Whether to register signal handlers (False for background threads)
         """
         self.interval = interval_seconds
         self.collector = BaseGasCollector()
@@ -46,9 +47,14 @@ class GasCollectorService:
         self.collection_count = 0
         self.error_count = 0
 
-        # Register signal handlers for graceful shutdown
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
+        # Register signal handlers for graceful shutdown (only in main thread)
+        if register_signals:
+            try:
+                signal.signal(signal.SIGINT, self._signal_handler)
+                signal.signal(signal.SIGTERM, self._signal_handler)
+            except ValueError:
+                # Signals can only be registered in the main thread
+                logger.debug("Skipping signal registration (not in main thread)")
 
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""

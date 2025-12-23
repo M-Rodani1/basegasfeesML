@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class OnChainCollectorService:
     """Background service for on-chain metrics collection"""
 
-    def __init__(self, interval_seconds=300):
+    def __init__(self, interval_seconds=300, register_signals=True):
         self.interval = interval_seconds
         self.w3 = Web3(Web3.HTTPProvider(Config.BASE_RPC_URL))
         self.db = DatabaseManager()
@@ -44,8 +44,14 @@ class OnChainCollectorService:
         self.collection_count = 0
         self.error_count = 0
 
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
+        # Register signal handlers for graceful shutdown (only in main thread)
+        if register_signals:
+            try:
+                signal.signal(signal.SIGINT, self._signal_handler)
+                signal.signal(signal.SIGTERM, self._signal_handler)
+            except ValueError:
+                # Signals can only be registered in the main thread
+                logger.debug("Skipping signal registration (not in main thread)")
 
     def _signal_handler(self, signum, frame):
         logger.info(f"Received signal {signum}, shutting down...")
