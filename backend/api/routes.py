@@ -321,101 +321,237 @@ def get_predictions():
         
         # Get recent historical data
         recent_data = db.get_historical_data(hours=48)
-        
+
         if len(recent_data) < 100:
             logger.warning(f"Not enough data: {len(recent_data)} records")
             return jsonify({'error': 'Not enough historical data'}), 500
-        
-        # Prepare features - recent_data is now a list of dicts
-        # Convert to DataFrame format with proper datetime
-        import pandas as pd
-        from dateutil import parser
-        
-        recent_df = []
-        for d in recent_data:
-            timestamp = d.get('timestamp', '')
-            # Parse timestamp string to datetime
-            if isinstance(timestamp, str):
-                try:
-                    dt = parser.parse(timestamp)
-                except:
-                    dt = datetime.now()
-            else:
-                dt = timestamp if hasattr(timestamp, 'hour') else datetime.now()
-            
-        recent_df.append({
-            'timestamp': dt,
-            'gas': d.get('gwei', 0) or d.get('current_gas', 0),
-            'base_fee': d.get('baseFee', 0) or d.get('base_fee', 0),
-            'priority_fee': d.get('priorityFee', 0) or d.get('priority_fee', 0),
-            'block_number': 0  # Not in dict format
-        })
-        
-        # Convert to DataFrame for feature engineering
-        df_recent = pd.DataFrame(recent_df)
-        if 'gas' in df_recent.columns:
-            df_recent['gas_price'] = df_recent['gas']
-        
-        # Create advanced features
-        from models.advanced_features import create_advanced_features
-        features, _ = create_advanced_features(df_recent)
-        
-        # Add external features (same as training)
-        df_recent['timestamp'] = pd.to_datetime(df_recent['timestamp'], format='mixed', errors='coerce')
-        df_recent = df_recent.sort_values('timestamp').reset_index(drop=True)
-        
-        # Add external features
-        df_recent['estimated_block_time'] = 2.0
-        df_recent['recent_volatility'] = df_recent['gas_price'].rolling(window=12, min_periods=1).std().fillna(0)
-        df_recent['congestion_score'] = (df_recent['recent_volatility'] / df_recent['gas_price'].rolling(window=12, min_periods=1).mean()).fillna(0)
-        df_recent['gas_change'] = df_recent['gas_price'].diff().abs().fillna(0)
-        df_recent['time_since_spike'] = 0
-        if len(df_recent) > 0:
-            spike_threshold = df_recent['gas_price'].quantile(0.9) if len(df_recent) > 1 else df_recent['gas_price'].iloc[0]
-            for i in range(1, len(df_recent)):
-                if df_recent.iloc[i]['gas_price'] > spike_threshold:
-                    df_recent.iloc[i, df_recent.columns.get_loc('time_since_spike')] = 0
-                else:
-                    df_recent.iloc[i, df_recent.columns.get_loc('time_since_spike')] = df_recent.iloc[i-1, df_recent.columns.get_loc('time_since_spike')] + 1
-        df_recent['momentum_1h'] = df_recent['gas_price'].pct_change(12).fillna(0)
-        df_recent['momentum_4h'] = df_recent['gas_price'].pct_change(48).fillna(0)
-        
-        # Merge external features with features DataFrame
-        external_features = ['estimated_block_time', 'recent_volatility', 'congestion_score', 
-                            'time_since_spike', 'momentum_1h', 'momentum_4h']
-        for feat in external_features:
-            if feat in df_recent.columns:
-                features[feat] = df_recent[feat].values[:len(features)]
-        
-        features = features.fillna(0)
-        
-        # Try to use ensemble predictor first
-        use_ensemble = False
+
+        # Wrap entire ML prediction pipeline in try-catch for graceful fallback
         try:
-            from models.ensemble_predictor import ensemble_predictor
-            if ensemble_predictor.load_models():
-                use_ensemble = True
-                logger.info("Using ensemble predictor with confidence intervals")
-        except Exception as e:
-            logger.warning(f"Ensemble model not available: {e}")
-        
-        # Make predictions with or without ensemble
-        prediction_data = {}
-        model_info = {}
-        
-        for horizon in ['1h', '4h', '24h']:
-            if use_ensemble:
-                try:
-                    # Use ensemble predictor
-                    result = ensemble_predictor.predict_with_confidence(features)
-                    
-                    pred_value = float(result['prediction'][0])
-                    lower_bound = float(result['lower_bound'][0])
-                    upper_bound = float(result['upper_bound'][0])
-                    confidence = float(result['confidence_score'][0])
-                    
-                    conf_level, emoji, color = ensemble_predictor.get_confidence_level(confidence)
-                    
+            # Prepare features - recent_data is now a list of dicts
+            # Convert to DataFrame format with proper datetime
+            import pandas as pd
+            from dateutil import parser
+
+            recent_df = []
+            for d in recent_data:
+                timestamp = d.get('timestamp', '')
+                # Parse timestamp string to datetime
+                if isinstance(timestamp, str):
+                    try:
+                        dt = parser.parse(timestamp)
+                    except:
+                        dt = datetime.now()
+                else:
+                    dt = timestamp if hasattr(timestamp, 'hour') else datetime.now()
+
+                recent_df.append({
+                    'timestamp': dt,
+                    'gas': d.get('gwei', 0) or d.get('current_gas', 0),
+                    'base_fee': d.get('baseFee', 0) or d.get('base_fee', 0),
+                    'priority_fee': d.get('priorityFee', 0) or d.get('priority_fee', 0),
+                    'block_number': 0  # Not in dict format
+                })
+
+            # Convert to DataFrame for feature engineering
+            df_recent = pd.DataFrame(recent_df)
+            if 'gas' in df_recent.columns:
+                df_recent['gas_price'] = df_recent['gas']
+
+            # Create advanced features
+            from models.advanced_features import create_advanced_features
+            features, _ = create_advanced_features(df_recent)
+
+            # Add external features (same as training)
+            df_recent['timestamp'] = pd.to_datetime(df_recent['timestamp'], format='mixed', errors='coerce')
+            df_recent = df_recent.sort_values('timestamp').reset_index(drop=True)
+
+            # Add external features
+            df_recent['estimated_block_time'] = 2.0
+            df_recent['recent_volatility'] = df_recent['gas_price'].rolling(window=12, min_periods=1).std().fillna(0)
+            df_recent['congestion_score'] = (df_recent['recent_volatility'] / df_recent['gas_price'].rolling(window=12, min_periods=1).mean()).fillna(0)
+            df_recent['gas_change'] = df_recent['gas_price'].diff().abs().fillna(0)
+            df_recent['time_since_spike'] = 0
+            if len(df_recent) > 0:
+                spike_threshold = df_recent['gas_price'].quantile(0.9) if len(df_recent) > 1 else df_recent['gas_price'].iloc[0]
+                for i in range(1, len(df_recent)):
+                    if df_recent.iloc[i]['gas_price'] > spike_threshold:
+                        df_recent.iloc[i, df_recent.columns.get_loc('time_since_spike')] = 0
+                    else:
+                        df_recent.iloc[i, df_recent.columns.get_loc('time_since_spike')] = df_recent.iloc[i-1, df_recent.columns.get_loc('time_since_spike')] + 1
+            df_recent['momentum_1h'] = df_recent['gas_price'].pct_change(12).fillna(0)
+            df_recent['momentum_4h'] = df_recent['gas_price'].pct_change(48).fillna(0)
+
+            # Merge external features with features DataFrame
+            external_features = ['estimated_block_time', 'recent_volatility', 'congestion_score',
+                                'time_since_spike', 'momentum_1h', 'momentum_4h']
+            for feat in external_features:
+                if feat in df_recent.columns:
+                    features[feat] = df_recent[feat].values[:len(features)]
+
+            features = features.fillna(0)
+
+            # Try to use ensemble predictor first
+            use_ensemble = False
+            try:
+                from models.ensemble_predictor import ensemble_predictor
+                if ensemble_predictor.load_models():
+                    use_ensemble = True
+                    logger.info("Using ensemble predictor with confidence intervals")
+            except Exception as e:
+                logger.warning(f"Ensemble model not available: {e}")
+
+            # Make predictions with or without ensemble
+            prediction_data = {}
+            model_info = {}
+
+            for horizon in ['1h', '4h', '24h']:
+                if use_ensemble:
+                    try:
+                        # Use ensemble predictor
+                        result = ensemble_predictor.predict_with_confidence(features)
+
+                        pred_value = float(result['prediction'][0])
+                        lower_bound = float(result['lower_bound'][0])
+                        upper_bound = float(result['upper_bound'][0])
+                        confidence = float(result['confidence_score'][0])
+
+                        conf_level, emoji, color = ensemble_predictor.get_confidence_level(confidence)
+
+                        prediction_data[horizon] = [{
+                            'time': horizon,
+                            'predictedGwei': pred_value,
+                            'lowerBound': lower_bound,
+                            'upperBound': upper_bound,
+                            'confidence': confidence,
+                            'confidenceLevel': conf_level,
+                            'confidenceEmoji': emoji,
+                            'confidenceColor': color
+                        }]
+
+                        model_info[horizon] = {
+                            'type': 'ensemble',
+                            'models': list(ensemble_predictor.models.keys()),
+                            'avg_confidence': confidence
+                        }
+
+                        # Save prediction (old format for compatibility)
+                        db.save_prediction(
+                            horizon=horizon,
+                            predicted_gas=pred_value,
+                            model_version='ensemble'
+                        )
+
+                        # Log prediction for validation
+                        horizon_hours = {'1h': 1, '4h': 4, '24h': 24}[horizon]
+                        target_time = datetime.now() + timedelta(hours=horizon_hours)
+                        validator.log_prediction(
+                            horizon=horizon,
+                            predicted_gas=pred_value,
+                            target_time=target_time,
+                            model_version='ensemble'
+                        )
+                    except Exception as e:
+                        logger.warning(f"Ensemble prediction failed for {horizon}: {e}, falling back to standard")
+                        use_ensemble = False
+
+                if not use_ensemble and horizon in models:
+                    # Fallback to standard models
+                    model_data = models[horizon]
+                    model = model_data['model']
+
+                    # Scale features if scaler is available
+                    features_to_predict = features
+                    if horizon in scalers:
+                        try:
+                            # Get expected features from model_data (these are already SELECTED features)
+                            expected_features = model_data.get('feature_names', [])
+                            if not expected_features and horizon in feature_names:
+                                expected_features = feature_names[horizon]
+
+                            if expected_features and len(expected_features) > 0:
+                                # Reorder features to match training order
+                                available_features = list(features.columns)
+                                missing_features = [f for f in expected_features if f not in available_features]
+
+                                if missing_features:
+                                    logger.warning(f"Missing features for {horizon}: {missing_features[:5]}...")
+                                    # Add missing features as zeros
+                                    for f in missing_features:
+                                        features[f] = 0
+
+                                # Select and order features (model expects these specific features)
+                                # Note: feature_selector was already applied during training, so these are the selected features
+                                features_to_predict = features[expected_features]
+                                logger.debug(f"Selected {len(features_to_predict.columns)} features for {horizon}")
+                            else:
+                                features_to_predict = features
+                                logger.warning(f"No expected features for {horizon}, using all {len(features.columns)} features")
+
+                            # Scale features
+                            features_scaled = scalers[horizon].transform(features_to_predict)
+                            pred = model.predict(features_scaled)[0]
+                        except ValueError as ve:
+                            # Feature mismatch - use simple fallback
+                            logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
+                            pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
+                        except Exception as e:
+                            logger.warning(f"Prediction failed for {horizon}: {e}, using fallback")
+                            pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
+                    else:
+                        try:
+                            pred = model.predict(features)[0]
+                        except ValueError as ve:
+                            # Feature mismatch - use simple fallback
+                            logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
+                            pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
+
+                    # Check if model predicts percentage change, absolute price, or log scale
+                    predicts_pct_change = model_data.get('predicts_percentage_change', False)
+                    uses_log_scale = model_data.get('uses_log_scale', False)
+                    target_scaler = model_data.get('target_scaler')
+
+                    # If target_scaler not in model_data, try to load from separate file
+                    if target_scaler is None:
+                        try:
+                            target_scaler_path = f'backend/models/saved_models/target_scaler_{horizon}.pkl'
+                            if os.path.exists(target_scaler_path):
+                                target_scaler = joblib.load(target_scaler_path)
+                                logger.info(f"Loaded target_scaler from {target_scaler_path}")
+                        except Exception as e:
+                            logger.warning(f"Could not load target_scaler: {e}")
+
+                    if uses_log_scale and target_scaler is not None:
+                        # Model predicts in log space with scaling
+                        # pred is in scaled log space, need to inverse transform then exp
+                        pred_log_scaled = np.array([[float(pred)]])
+                        pred_log = target_scaler.inverse_transform(pred_log_scaled)[0][0]
+                        pred_value = round(np.exp(pred_log) - 1e-8, 6)  # Inverse log
+                        logger.info(f"Prediction for {horizon} (log scale): {pred_log:.6f} -> {pred_value:.6f} gwei")
+                    elif target_scaler is not None:
+                        # Model was trained with target scaling - inverse transform needed
+                        pred_scaled = np.array([[float(pred)]])
+                        pred_value = target_scaler.inverse_transform(pred_scaled)[0][0]
+                        pred_value = round(pred_value, 6)
+                        logger.info(f"Prediction for {horizon} (scaled): {pred:.6f} -> {pred_value:.6f} gwei")
+                    elif predicts_pct_change:
+                        # Model predicts percentage change, convert to absolute price
+                        pct_change = float(pred)
+                        # Clamp percentage change to reasonable range (-90% to +500%)
+                        pct_change = max(-90, min(500, pct_change))
+                        pred_value = round(current['current_gas'] * (1 + pct_change / 100), 6)
+                        # Ensure prediction is positive and reasonable
+                        pred_value = max(0.0001, min(pred_value, current['current_gas'] * 10))
+                    else:
+                        # Model predicts absolute price directly
+                        pred_value = round(float(pred), 6)
+
+                    # Estimate confidence (simple heuristic)
+                    confidence = 0.75  # Default medium confidence
+                    lower_bound = pred_value * 0.9
+                    upper_bound = pred_value * 1.1
+                    conf_level, emoji, color = 'medium', '🟡', 'yellow'
+
                     prediction_data[horizon] = [{
                         'time': horizon,
                         'predictedGwei': pred_value,
@@ -426,18 +562,16 @@ def get_predictions():
                         'confidenceEmoji': emoji,
                         'confidenceColor': color
                     }]
-                    
+
                     model_info[horizon] = {
-                        'type': 'ensemble',
-                        'models': list(ensemble_predictor.models.keys()),
-                        'avg_confidence': confidence
+                        'name': model_data['model_name'],
+                        'mae': model_data['metrics']['mae']
                     }
-                    
-                    # Save prediction (old format for compatibility)
+
                     db.save_prediction(
                         horizon=horizon,
-                        predicted_gas=pred_value,
-                        model_version='ensemble'
+                        predicted_gas=pred,
+                        model_version=model_data['model_name']
                     )
 
                     # Log prediction for validation
@@ -445,171 +579,92 @@ def get_predictions():
                     target_time = datetime.now() + timedelta(hours=horizon_hours)
                     validator.log_prediction(
                         horizon=horizon,
-                        predicted_gas=pred_value,
+                        predicted_gas=pred,
                         target_time=target_time,
-                        model_version='ensemble'
+                        model_version=model_data['model_name']
                     )
-                except Exception as e:
-                    logger.warning(f"Ensemble prediction failed for {horizon}: {e}, falling back to standard")
-                    use_ensemble = False
-            
-            if not use_ensemble and horizon in models:
-                # Fallback to standard models
-                model_data = models[horizon]
-                model = model_data['model']
-                
-                # Scale features if scaler is available
-                features_to_predict = features
-                if horizon in scalers:
-                    try:
-                        # Get expected features from model_data (these are already SELECTED features)
-                        expected_features = model_data.get('feature_names', [])
-                        if not expected_features and horizon in feature_names:
-                            expected_features = feature_names[horizon]
-                        
-                        if expected_features and len(expected_features) > 0:
-                            # Reorder features to match training order
-                            available_features = list(features.columns)
-                            missing_features = [f for f in expected_features if f not in available_features]
-                            
-                            if missing_features:
-                                logger.warning(f"Missing features for {horizon}: {missing_features[:5]}...")
-                                # Add missing features as zeros
-                                for f in missing_features:
-                                    features[f] = 0
-                            
-                            # Select and order features (model expects these specific features)
-                            # Note: feature_selector was already applied during training, so these are the selected features
-                            features_to_predict = features[expected_features]
-                            logger.debug(f"Selected {len(features_to_predict.columns)} features for {horizon}")
-                        else:
-                            features_to_predict = features
-                            logger.warning(f"No expected features for {horizon}, using all {len(features.columns)} features")
-                        
-                        # Scale features
-                        features_scaled = scalers[horizon].transform(features_to_predict)
-                        pred = model.predict(features_scaled)[0]
-                    except ValueError as ve:
-                        # Feature mismatch - use simple fallback
-                        logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
-                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
-                    except Exception as e:
-                        logger.warning(f"Prediction failed for {horizon}: {e}, using fallback")
-                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
-                else:
-                    try:
-                        pred = model.predict(features)[0]
-                    except ValueError as ve:
-                        # Feature mismatch - use simple fallback
-                        logger.warning(f"Feature mismatch for {horizon}: {ve}. Using fallback prediction")
-                        pred = current['current_gas'] * (1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15)
 
-                # Check if model predicts percentage change, absolute price, or log scale
-                predicts_pct_change = model_data.get('predicts_percentage_change', False)
-                uses_log_scale = model_data.get('uses_log_scale', False)
-                target_scaler = model_data.get('target_scaler')
-                
-                # If target_scaler not in model_data, try to load from separate file
-                if target_scaler is None:
+            # Format historical data for graph
+            historical = []
+            for d in recent_data[-100:]:
+                timestamp = d.get('timestamp', '')
+                if isinstance(timestamp, str):
+                    from dateutil import parser
                     try:
-                        target_scaler_path = f'backend/models/saved_models/target_scaler_{horizon}.pkl'
-                        if os.path.exists(target_scaler_path):
-                            target_scaler = joblib.load(target_scaler_path)
-                            logger.info(f"Loaded target_scaler from {target_scaler_path}")
-                    except Exception as e:
-                        logger.warning(f"Could not load target_scaler: {e}")
-                
-                if uses_log_scale and target_scaler is not None:
-                    # Model predicts in log space with scaling
-                    # pred is in scaled log space, need to inverse transform then exp
-                    pred_log_scaled = np.array([[float(pred)]])
-                    pred_log = target_scaler.inverse_transform(pred_log_scaled)[0][0]
-                    pred_value = round(np.exp(pred_log) - 1e-8, 6)  # Inverse log
-                    logger.info(f"Prediction for {horizon} (log scale): {pred_log:.6f} -> {pred_value:.6f} gwei")
-                elif target_scaler is not None:
-                    # Model was trained with target scaling - inverse transform needed
-                    pred_scaled = np.array([[float(pred)]])
-                    pred_value = target_scaler.inverse_transform(pred_scaled)[0][0]
-                    pred_value = round(pred_value, 6)
-                    logger.info(f"Prediction for {horizon} (scaled): {pred:.6f} -> {pred_value:.6f} gwei")
-                elif predicts_pct_change:
-                    # Model predicts percentage change, convert to absolute price
-                    pct_change = float(pred)
-                    # Clamp percentage change to reasonable range (-90% to +500%)
-                    pct_change = max(-90, min(500, pct_change))
-                    pred_value = round(current['current_gas'] * (1 + pct_change / 100), 6)
-                    # Ensure prediction is positive and reasonable
-                    pred_value = max(0.0001, min(pred_value, current['current_gas'] * 10))
+                        dt = parser.parse(timestamp)
+                        time_str = dt.strftime('%H:%M')
+                    except:
+                        time_str = timestamp[:5] if len(timestamp) > 5 else timestamp
                 else:
-                    # Model predicts absolute price directly
-                    pred_value = round(float(pred), 6)
-                
-                # Estimate confidence (simple heuristic)
-                confidence = 0.75  # Default medium confidence
-                lower_bound = pred_value * 0.9
-                upper_bound = pred_value * 1.1
-                conf_level, emoji, color = 'medium', '🟡', 'yellow'
-                
-                prediction_data[horizon] = [{
+                    time_str = str(timestamp)[:5]
+
+                historical.append({
+                    'time': time_str,
+                    'gwei': round(d.get('gwei', 0) or d.get('current_gas', 0), 4)
+                })
+
+            prediction_data['historical'] = historical
+
+            logger.info(f"Predictions with confidence: 1h={prediction_data.get('1h', [{}])[0].get('predictedGwei', 0)}")
+
+            return jsonify({
+                'current': current,
+                'predictions': prediction_data,
+                'model_info': model_info
+            })
+
+        except Exception as ml_error:
+            # ML pipeline failed - use simple fallback predictions
+            logger.error(f"ML prediction pipeline failed: {ml_error}")
+            logger.error(traceback.format_exc())
+            logger.info("Using fallback predictions based on current gas price")
+
+            # Simple fallback: slight increases based on horizon
+            fallback_predictions = {}
+            for horizon in ['1h', '4h', '24h']:
+                multiplier = 1.05 if horizon == '1h' else 1.1 if horizon == '4h' else 1.15
+                pred_value = round(current['current_gas'] * multiplier, 6)
+
+                fallback_predictions[horizon] = [{
                     'time': horizon,
                     'predictedGwei': pred_value,
-                    'lowerBound': lower_bound,
-                    'upperBound': upper_bound,
-                    'confidence': confidence,
-                    'confidenceLevel': conf_level,
-                    'confidenceEmoji': emoji,
-                    'confidenceColor': color
+                    'lowerBound': round(pred_value * 0.9, 6),
+                    'upperBound': round(pred_value * 1.1, 6),
+                    'confidence': 0.5,
+                    'confidenceLevel': 'low',
+                    'confidenceEmoji': '🔴',
+                    'confidenceColor': 'red'
                 }]
-                
-                model_info[horizon] = {
-                    'name': model_data['model_name'],
-                    'mae': model_data['metrics']['mae']
-                }
-                
-                db.save_prediction(
-                    horizon=horizon,
-                    predicted_gas=pred,
-                    model_version=model_data['model_name']
-                )
 
-                # Log prediction for validation
-                horizon_hours = {'1h': 1, '4h': 4, '24h': 24}[horizon]
-                target_time = datetime.now() + timedelta(hours=horizon_hours)
-                validator.log_prediction(
-                    horizon=horizon,
-                    predicted_gas=pred,
-                    target_time=target_time,
-                    model_version=model_data['model_name']
-                )
-        
-        # Format historical data for graph
-        historical = []
-        for d in recent_data[-100:]:
-            timestamp = d.get('timestamp', '')
-            if isinstance(timestamp, str):
-                from dateutil import parser
-                try:
-                    dt = parser.parse(timestamp)
-                    time_str = dt.strftime('%H:%M')
-                except:
-                    time_str = timestamp[:5] if len(timestamp) > 5 else timestamp
-            else:
-                time_str = str(timestamp)[:5]
-            
-            historical.append({
-                'time': time_str,
-                'gwei': round(d.get('gwei', 0) or d.get('current_gas', 0), 4)
+            # Format historical data for graph
+            historical = []
+            for d in recent_data[-100:]:
+                timestamp = d.get('timestamp', '')
+                if isinstance(timestamp, str):
+                    from dateutil import parser
+                    try:
+                        dt = parser.parse(timestamp)
+                        time_str = dt.strftime('%H:%M')
+                    except:
+                        time_str = timestamp[:5] if len(timestamp) > 5 else timestamp
+                else:
+                    time_str = str(timestamp)[:5]
+
+                historical.append({
+                    'time': time_str,
+                    'gwei': round(d.get('gwei', 0) or d.get('current_gas', 0), 4)
+                })
+
+            fallback_predictions['historical'] = historical
+
+            return jsonify({
+                'current': current,
+                'predictions': fallback_predictions,
+                'model_info': {
+                    'warning': 'Using fallback predictions - ML models need retraining',
+                    'error': str(ml_error)
+                }
             })
-        
-        prediction_data['historical'] = historical
-        
-        logger.info(f"Predictions with confidence: 1h={prediction_data.get('1h', [{}])[0].get('predictedGwei', 0)}")
-        
-        return jsonify({
-            'current': current,
-            'predictions': prediction_data,
-            'model_info': model_info
-        })
         
     except Exception as e:
         logger.error(f"Error in /predictions: {traceback.format_exc()}")
