@@ -13,6 +13,7 @@ from api.onchain_routes import onchain_bp
 from api.retraining_routes import retraining_bp
 from api.farcaster_routes import farcaster_bp
 from api.cron_routes import cron_bp
+from api.analytics_routes import analytics_bp
 from api.middleware import limiter, error_handlers, log_request
 from config import Config
 from utils.logger import logger
@@ -62,6 +63,7 @@ def create_app():
     app.register_blueprint(retraining_bp, url_prefix='/api')
     app.register_blueprint(farcaster_bp, url_prefix='/api')
     app.register_blueprint(cron_bp, url_prefix='/api')
+    app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
     app.register_blueprint(base_config_bp)  # No prefix - serves at root for /config.json
     
     @app.route('/')
@@ -94,6 +96,15 @@ def create_app():
                     'trigger': '/api/retraining/trigger (POST)',
                     'history': '/api/retraining/history',
                     'check_data': '/api/retraining/check-data'
+                },
+                'analytics': {
+                    'dashboard': '/api/analytics/dashboard',
+                    'performance': '/api/analytics/performance',
+                    'trends': '/api/analytics/trends',
+                    'validation_summary': '/api/analytics/validation-summary',
+                    'model_health': '/api/analytics/model-health',
+                    'collection_stats': '/api/analytics/collection-stats',
+                    'recent_predictions': '/api/analytics/recent-predictions'
                 }
             }
         })

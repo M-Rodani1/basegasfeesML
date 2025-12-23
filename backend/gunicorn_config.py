@@ -39,10 +39,29 @@ def post_fork(server, worker):
             except Exception as e:
                 logger.error(f"Failed to start data collection: {e}")
 
-        # Start in background thread
+        def start_validation_scheduler():
+            """Start prediction validation scheduler"""
+            try:
+                from services.validation_scheduler import ValidationScheduler
+
+                logger.info("="*60)
+                logger.info("STARTING PREDICTION VALIDATION SCHEDULER")
+                logger.info("="*60)
+
+                scheduler = ValidationScheduler()
+                scheduler.start()
+            except Exception as e:
+                logger.error(f"Failed to start validation scheduler: {e}")
+
+        # Start data collection in background thread
         collection_thread = threading.Thread(target=start_data_collection, daemon=True)
         collection_thread.start()
         logger.info(f"Data collection thread started in worker {worker.pid}")
+
+        # Start validation scheduler in background thread
+        validation_thread = threading.Thread(target=start_validation_scheduler, daemon=True)
+        validation_thread.start()
+        logger.info(f"Validation scheduler thread started in worker {worker.pid}")
 
 
 # Gunicorn settings
