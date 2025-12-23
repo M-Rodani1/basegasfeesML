@@ -60,8 +60,41 @@ def prepare_features(data):
     print(f"   Data range: {df['timestamp'].min()} to {df['timestamp'].max()}")
     print(f"   Gas price range: {df['gas_price'].min():.6f} to {df['gas_price'].max():.6f} gwei")
 
+    # IMPROVEMENT 1: Outlier Detection and Filtering
+    # Use IQR method to identify extreme outliers
+    Q1 = df['gas_price'].quantile(0.25)
+    Q3 = df['gas_price'].quantile(0.75)
+    IQR = Q3 - Q1
+
+    # Define outlier boundaries (using 3x IQR for extreme outliers only)
+    lower_bound = Q1 - 3 * IQR
+    upper_bound = Q3 + 3 * IQR
+
+    outliers = (df['gas_price'] < lower_bound) | (df['gas_price'] > upper_bound)
+    outlier_count = outliers.sum()
+
+    if outlier_count > 0:
+        print(f"   Found {outlier_count} extreme outliers (>{upper_bound:.4f} or <{lower_bound:.4f} gwei)")
+        print(f"   Median: {df['gas_price'].median():.6f}, Q1: {Q1:.6f}, Q3: {Q3:.6f}")
+
+        # Cap outliers instead of removing them (preserve time series continuity)
+        df.loc[df['gas_price'] > upper_bound, 'gas_price'] = upper_bound
+        df.loc[df['gas_price'] < lower_bound, 'gas_price'] = lower_bound
+
+        print(f"   Capped extreme outliers to bounds: [{lower_bound:.4f}, {upper_bound:.4f}]")
+
+    # IMPROVEMENT 2: Log-scale transformation for better handling of wide ranges
+    # Add small epsilon to avoid log(0)
+    epsilon = 1e-8
+    df['gas_price_log'] = np.log(df['gas_price'] + epsilon)
+
+    print(f"   Using log-scale predictions for better outlier handling")
+
     # Create advanced features using the same function as production
-    X, y = create_advanced_features(df)
+    X, y_original = create_advanced_features(df)
+
+    # Use log-scaled target
+    y = df['gas_price_log']
 
     print(f"✅ Created {X.shape[1]} features from {len(df)} records")
 
@@ -71,19 +104,35 @@ def prepare_features(data):
     y_4h = y.shift(-48)
     y_24h = y.shift(-288)
 
-    return X, y_1h, y_4h, y_24h
+    # Also return original scale targets for metrics calculation
+    y_1h_original = y_original.shift(-12)
+    y_4h_original = y_original.shift(-48)
+    y_24h_original = y_original.shift(-288)
+
+    return X, (y_1h, y_1h_original), (y_4h, y_4h_original), (y_24h, y_24h_original)
 
 
-def train_model(X, y, horizon, min_samples=100):
-    """Train a single model for given horizon"""
+def train_model(X, y_tuple, horizon, min_samples=100):
+    """
+    Train a single model for given horizon
+
+    Args:
+        X: Features
+        y_tuple: (y_log, y_original) - log-scale and original scale targets
+        horizon: Prediction horizon
+        min_samples: Minimum samples required
+    """
     print(f"\n{'='*60}")
     print(f"🎯 Training model for {horizon} horizon")
     print(f"{'='*60}")
 
+    y_log, y_original = y_tuple
+
     # Remove NaN values
-    valid_idx = ~(X.isna().any(axis=1) | y.isna())
+    valid_idx = ~(X.isna().any(axis=1) | y_log.isna() | y_original.isna())
     X_clean = X[valid_idx]
-    y_clean = y[valid_idx]
+    y_log_clean = y_log[valid_idx]
+    y_original_clean = y_original[valid_idx]
 
     print(f"   Valid samples: {len(X_clean)}")
 
@@ -95,8 +144,9 @@ def train_model(X, y, horizon, min_samples=100):
     split_idx = int(len(X_clean) * 0.8)
     X_train = X_clean.iloc[:split_idx]
     X_test = X_clean.iloc[split_idx:]
-    y_train = y_clean.iloc[:split_idx]
-    y_test = y_clean.iloc[split_idx:]
+    y_log_train = y_log_clean.iloc[:split_idx]
+    y_log_test = y_log_clean.iloc[split_idx:]
+    y_original_test = y_original_clean.iloc[split_idx:]
 
     print(f"   Train samples: {len(X_train)}")
     print(f"   Test samples: {len(X_test)}")
@@ -106,8 +156,8 @@ def train_model(X, y, horizon, min_samples=100):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Train Random Forest model
-    print(f"📊 Training Random Forest...")
+    # Train Random Forest model on log-scale targets
+    print(f"📊 Training Random Forest (log-scale)...")
     model = RandomForestRegressor(
         n_estimators=100,
         max_depth=15,
@@ -116,37 +166,57 @@ def train_model(X, y, horizon, min_samples=100):
         random_state=42,
         n_jobs=-1
     )
-    model.fit(X_train_scaled, y_train)
+    model.fit(X_train_scaled, y_log_train)
 
-    # Evaluate
-    y_pred = model.predict(X_test_scaled)
-    mae = mean_absolute_error(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    r2 = r2_score(y_test, y_pred)
+    # Evaluate on log scale
+    y_log_pred = model.predict(X_test_scaled)
 
-    # Directional accuracy
-    if len(y_test) > 1:
-        y_diff_actual = np.diff(y_test.values)
-        y_diff_pred = np.diff(y_pred)
+    # Convert predictions back to original scale
+    epsilon = 1e-8
+    y_pred_original = np.exp(y_log_pred) - epsilon
+
+    # IMPROVEMENT 3: Better Metrics - Calculate on original scale
+    mae = mean_absolute_error(y_original_test, y_pred_original)
+    rmse = np.sqrt(mean_squared_error(y_original_test, y_pred_original))
+    r2 = r2_score(y_original_test, y_pred_original)
+
+    # MAPE (Mean Absolute Percentage Error) - better for relative errors
+    mape = np.mean(np.abs((y_original_test - y_pred_original) / (y_original_test + 1e-8))) * 100
+
+    # Directional accuracy (on original scale)
+    if len(y_original_test) > 1:
+        y_diff_actual = np.diff(y_original_test.values)
+        y_diff_pred = np.diff(y_pred_original)
         directional_accuracy = np.mean(np.sign(y_diff_actual) == np.sign(y_diff_pred))
     else:
         directional_accuracy = 0.0
 
-    print(f"\n✅ Model Performance:")
+    print(f"\n✅ Model Performance (on original scale):")
     print(f"   MAE: {mae:.6f} gwei")
     print(f"   RMSE: {rmse:.6f} gwei")
     print(f"   R²: {r2:.4f}")
+    print(f"   MAPE: {mape:.2f}%")
     print(f"   Directional Accuracy: {directional_accuracy*100:.1f}%")
+
+    # Additional insight: show median prediction vs actual
+    median_actual = np.median(y_original_test)
+    median_pred = np.median(y_pred_original)
+    print(f"   Median Actual: {median_actual:.6f} gwei")
+    print(f"   Median Predicted: {median_pred:.6f} gwei")
 
     return {
         'model': model,
         'scaler': scaler,
         'feature_names': list(X_clean.columns),
+        'uses_log_scale': True,  # Flag for prediction inference
         'metrics': {
             'mae': mae,
             'rmse': rmse,
             'r2': r2,
-            'directional_accuracy': directional_accuracy
+            'mape': mape,
+            'directional_accuracy': directional_accuracy,
+            'median_actual': median_actual,
+            'median_pred': median_pred
         }
     }
 
@@ -162,11 +232,13 @@ def save_model(model_data, horizon, output_dir='backend/models/saved_models'):
     filepath = os.path.join(output_dir, f'model_{horizon}.pkl')
     save_data = {
         'model': model_data['model'],
-        'model_name': 'RandomForest',
+        'model_name': 'RandomForest_LogScale',
         'metrics': model_data['metrics'],
         'trained_at': datetime.now().isoformat(),
         'feature_names': model_data['feature_names'],
-        'scaler_type': 'RobustScaler'
+        'scaler_type': 'RobustScaler',
+        'uses_log_scale': True,  # IMPORTANT: Predictions need exp() transformation
+        'predicts_percentage_change': False
     }
     joblib.dump(save_data, filepath)
     print(f"💾 Saved model to {filepath}")
@@ -222,8 +294,11 @@ def main():
             print(f"  MAE: {metrics['mae']:.6f} gwei")
             print(f"  RMSE: {metrics['rmse']:.6f} gwei")
             print(f"  R²: {metrics['r2']:.4f}")
+            print(f"  MAPE: {metrics['mape']:.2f}%")
             print(f"  Directional Accuracy: {metrics['directional_accuracy']*100:.1f}%")
             print(f"  Features: {len(model_data['feature_names'])}")
+            print(f"  Median Actual: {metrics['median_actual']:.6f} gwei")
+            print(f"  Median Predicted: {metrics['median_pred']:.6f} gwei")
 
         print("\n" + "="*70)
         print("📋 Next Steps:")
