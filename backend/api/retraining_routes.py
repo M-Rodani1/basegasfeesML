@@ -250,3 +250,64 @@ def check_training_data():
     except Exception as e:
         logger.error(f"Error checking training data: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+@retraining_bp.route('/retraining/simple', methods=['POST'])
+def trigger_simple_retraining():
+    """
+    Trigger simple model retraining using the retrain_models_simple.py script
+
+    This runs synchronously and may take 3-5 minutes. For async execution,
+    consider using a background task queue.
+
+    Returns:
+        Training results or error
+    """
+    try:
+        import subprocess
+        import sys
+
+        logger.info("Starting simple model retraining...")
+
+        # Run the retraining script
+        script_path = "backend/scripts/retrain_models_simple.py"
+
+        # Execute the script and capture output
+        result = subprocess.run(
+            [sys.executable, script_path],
+            capture_output=True,
+            text=True,
+            timeout=600  # 10 minute timeout
+        )
+
+        if result.returncode == 0:
+            logger.info("Retraining completed successfully")
+            return jsonify({
+                'status': 'success',
+                'message': 'Models retrained successfully',
+                'output': result.stdout,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            logger.error(f"Retraining failed: {result.stderr}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Retraining failed',
+                'error': result.stderr,
+                'output': result.stdout
+            }), 500
+
+    except subprocess.TimeoutExpired:
+        logger.error("Retraining timed out")
+        return jsonify({
+            'status': 'error',
+            'message': 'Retraining timed out after 10 minutes'
+        }), 500
+    except Exception as e:
+        logger.error(f"Error during simple retraining: {e}")
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
