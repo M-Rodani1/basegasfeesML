@@ -182,9 +182,9 @@ def historical():
             
             formatted_data.append({
                 'time': timestamp.strftime('%Y-%m-%d %H:%M') if isinstance(timestamp, datetime) else str(timestamp),
-                'gwei': round(d.get('current_gas', 0), 4),
-                'baseFee': round(d.get('base_fee', 0), 4),
-                'priorityFee': round(d.get('priority_fee', 0), 4)
+                'gwei': round(d.get('gwei', 0), 4),
+                'baseFee': round(d.get('baseFee', 0), 4),
+                'priorityFee': round(d.get('priorityFee', 0), 4)
             })
         
         logger.info(f"Returned {len(formatted_data)} historical records")
