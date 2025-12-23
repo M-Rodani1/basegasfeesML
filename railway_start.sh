@@ -5,19 +5,23 @@
 echo "=== Checking /app directory ==="
 ls -la /app
 echo ""
+echo "=== Checking /app/backend directory ==="
+ls -la /app/backend
+echo ""
 echo "=== Looking for app.py ==="
 find /app -name "app.py" -type f 2>/dev/null || echo "No app.py found anywhere"
 echo ""
 
-# Check if backend directory exists
-if [ -d "/app/backend" ]; then
-    echo "backend directory exists, using /app/backend"
+# Check if app.py exists in backend directory
+if [ -f "/app/backend/app.py" ]; then
+    echo "app.py found in /app/backend, using that directory"
     cd /app/backend
     export PYTHONPATH=/app/backend:${PYTHONPATH}
 else
-    echo "backend directory does NOT exist, using /app directly"
-    cd /app
-    export PYTHONPATH=/app:${PYTHONPATH}
+    echo "WARNING: app.py NOT found in /app/backend!"
+    echo "Checking if volume is mounted correctly..."
+    mount | grep backend || echo "No backend volume mount found"
+    exit 1
 fi
 
 echo "Current directory: $(pwd)"
