@@ -2,16 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Cpu, CheckCircle, AlertTriangle, Clock, TrendingUp, Database, RefreshCw, Activity } from 'lucide-react';
 
 interface ModelStatus {
-  model_status: 'healthy' | 'warning' | 'needs_retraining';
-  last_trained: string;
-  model_version: string;
-  performance_summary: {
-    overall_accuracy: number;
-    mae: number;
-    r2_score: number;
+  model_status?: 'healthy' | 'warning' | 'needs_retraining';
+  last_trained?: string;
+  model_version?: string;
+  performance_summary?: {
+    overall_accuracy?: number;
+    mae?: number;
+    r2_score?: number;
   };
-  next_check: string;
-  days_since_training: number;
+  next_check?: string;
+  days_since_training?: number;
+  // Fallback fields from actual API
+  should_retrain?: boolean;
+  reason?: string;
+  last_training?: {
+    timestamp: string;
+    reason: string;
+    models_trained: string[];
+    validation_passed: boolean;
+  } | null;
+  checked_at?: string;
 }
 
 interface RetrainingHistory {
@@ -110,31 +120,46 @@ const ModelStatusWidget: React.FC = () => {
     }
   };
 
-  const getStatusColor = (modelStatus: string) => {
-    switch (modelStatus) {
-      case 'healthy': return 'text-green-400 bg-green-500/20 border-green-500/30';
-      case 'warning': return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
-      case 'needs_retraining': return 'text-red-400 bg-red-500/20 border-red-500/30';
-      default: return 'text-gray-400 bg-gray-500/20 border-gray-500/30';
+  const getStatusColor = (modelStatus?: string, shouldRetrain?: boolean) => {
+    if (modelStatus) {
+      switch (modelStatus) {
+        case 'healthy': return 'text-green-400 bg-green-500/20 border-green-500/30';
+        case 'warning': return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
+        case 'needs_retraining': return 'text-red-400 bg-red-500/20 border-red-500/30';
+      }
     }
+    // Fallback to should_retrain
+    if (shouldRetrain === false) return 'text-green-400 bg-green-500/20 border-green-500/30';
+    if (shouldRetrain === true) return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
+    return 'text-gray-400 bg-gray-500/20 border-gray-500/30';
   };
 
-  const getStatusIcon = (modelStatus: string) => {
-    switch (modelStatus) {
-      case 'healthy': return <CheckCircle className="w-5 h-5" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5" />;
-      case 'needs_retraining': return <AlertTriangle className="w-5 h-5" />;
-      default: return <Cpu className="w-5 h-5" />;
+  const getStatusIcon = (modelStatus?: string, shouldRetrain?: boolean) => {
+    if (modelStatus) {
+      switch (modelStatus) {
+        case 'healthy': return <CheckCircle className="w-5 h-5" />;
+        case 'warning': return <AlertTriangle className="w-5 h-5" />;
+        case 'needs_retraining': return <AlertTriangle className="w-5 h-5" />;
+      }
     }
+    // Fallback
+    if (shouldRetrain === false) return <CheckCircle className="w-5 h-5" />;
+    if (shouldRetrain === true) return <AlertTriangle className="w-5 h-5" />;
+    return <Cpu className="w-5 h-5" />;
   };
 
-  const getStatusText = (modelStatus: string) => {
-    switch (modelStatus) {
-      case 'healthy': return 'Healthy';
-      case 'warning': return 'Monitoring';
-      case 'needs_retraining': return 'Needs Retraining';
-      default: return 'Unknown';
+  const getStatusText = (modelStatus?: string, shouldRetrain?: boolean) => {
+    if (modelStatus) {
+      switch (modelStatus) {
+        case 'healthy': return 'Healthy';
+        case 'warning': return 'Monitoring';
+        case 'needs_retraining': return 'Needs Retraining';
+      }
     }
+    // Fallback
+    if (shouldRetrain === false) return 'Healthy';
+    if (shouldRetrain === true) return 'Needs Retraining';
+    return 'Unknown';
   };
 
   const formatPercentage = (value: number) => {
@@ -183,16 +208,19 @@ const ModelStatusWidget: React.FC = () => {
               <h3 className="text-sm font-semibold text-white">AI Model Status</h3>
               {status && (
                 <p className="text-xs text-gray-400">
-                  v{status.model_version} • Trained {status.days_since_training}d ago
+                  {status.model_version ? `v${status.model_version}` : 'Active'}
+                  {status.days_since_training !== undefined && ` • Trained ${status.days_since_training}d ago`}
+                  {!status.model_version && !status.days_since_training && status.last_training &&
+                    ` • Last: ${new Date(status.last_training.timestamp).toLocaleDateString()}`}
                 </p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-3">
             {status && (
-              <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${getStatusColor(status.model_status)}`}>
-                {getStatusIcon(status.model_status)}
-                <span className="text-xs font-medium">{getStatusText(status.model_status)}</span>
+              <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${getStatusColor(status.model_status, status.should_retrain)}`}>
+                {getStatusIcon(status.model_status, status.should_retrain)}
+                <span className="text-xs font-medium">{getStatusText(status.model_status, status.should_retrain)}</span>
               </div>
             )}
             <svg
