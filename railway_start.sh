@@ -1,19 +1,27 @@
 #!/bin/bash
 # Railway startup script
 
-# Debug: Check if files exist
-echo "Checking files..."
-ls -la /app/backend/app.py || echo "app.py not found!"
-pwd
+# Debug: Check what's actually deployed
+echo "=== Checking /app directory ==="
+ls -la /app
+echo ""
+echo "=== Looking for app.py ==="
+find /app -name "app.py" -type f 2>/dev/null || echo "No app.py found anywhere"
+echo ""
 
-# Change to backend directory and ensure it's in sys.path
-cd /app/backend
-export PYTHONPATH=/app/backend:${PYTHONPATH}
+# Check if backend directory exists
+if [ -d "/app/backend" ]; then
+    echo "backend directory exists, using /app/backend"
+    cd /app/backend
+    export PYTHONPATH=/app/backend:${PYTHONPATH}
+else
+    echo "backend directory does NOT exist, using /app directly"
+    cd /app
+    export PYTHONPATH=/app:${PYTHONPATH}
+fi
 
-# Debug: Show python path
-echo "PYTHONPATH: $PYTHONPATH"
 echo "Current directory: $(pwd)"
-python3 -c "import sys; print('Python path:', sys.path)"
+echo "PYTHONPATH: $PYTHONPATH"
 
-# Start gunicorn with current directory as module base
+# Start gunicorn
 exec python3 -m gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 --preload
