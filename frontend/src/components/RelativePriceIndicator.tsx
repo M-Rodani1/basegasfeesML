@@ -185,7 +185,7 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
         <div className="flex justify-between items-center p-2 bg-gray-700/50 rounded">
           <span className="text-xs sm:text-sm text-gray-400">Current Gas:</span>
           <span className="text-sm sm:text-base font-bold text-gray-100">
-            {currentGas !== undefined && currentGas !== null ? (currentGas * 1000).toFixed(3) : 'N/A'} gwei
+            {currentGas !== undefined && currentGas !== null ? currentGas.toFixed(4) : 'N/A'} gwei
           </span>
         </div>
 
@@ -193,7 +193,7 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
           <div className="flex justify-between items-center p-2 bg-gray-700/50 rounded">
             <span className="text-xs sm:text-sm text-gray-400">Hour Average:</span>
             <span className="text-sm sm:text-base font-mono text-gray-300">
-              {hourlyAverage !== undefined && hourlyAverage !== null ? (hourlyAverage * 1000).toFixed(3) : 'N/A'} gwei
+              {hourlyAverage !== undefined && hourlyAverage !== null ? hourlyAverage.toFixed(4) : 'N/A'} gwei
             </span>
           </div>
         )}
@@ -202,7 +202,7 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
           <div className="flex justify-between items-center p-2 bg-gray-700/50 rounded">
             <span className="text-xs sm:text-sm text-gray-400">24h Average:</span>
             <span className="text-sm sm:text-base font-mono text-gray-300">
-              {dayAverage !== undefined && dayAverage !== null ? (dayAverage * 1000).toFixed(3) : 'N/A'} gwei
+              {dayAverage !== undefined && dayAverage !== null ? dayAverage.toFixed(4) : 'N/A'} gwei
             </span>
           </div>
         )}
