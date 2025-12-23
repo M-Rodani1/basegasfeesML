@@ -247,7 +247,7 @@ const ModelStatusWidget: React.FC = () => {
                   <p className="text-xs text-gray-400">Accuracy</p>
                 </div>
                 <p className="text-lg font-bold text-white">
-                  {formatPercentage(status.performance_summary.overall_accuracy)}
+                  {formatPercentage(status.performance_summary?.overall_accuracy)}
                 </p>
               </div>
               <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600">
@@ -256,7 +256,7 @@ const ModelStatusWidget: React.FC = () => {
                   <p className="text-xs text-gray-400">MAE</p>
                 </div>
                 <p className="text-lg font-bold text-white">
-                  {status.performance_summary.mae !== undefined && status.performance_summary.mae !== null ? status.performance_summary.mae.toFixed(6) : 'N/A'}
+                  {status.performance_summary?.mae !== undefined && status.performance_summary?.mae !== null ? status.performance_summary.mae.toFixed(6) : 'N/A'}
                 </p>
               </div>
               <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600">
@@ -265,7 +265,7 @@ const ModelStatusWidget: React.FC = () => {
                   <p className="text-xs text-gray-400">R² Score</p>
                 </div>
                 <p className="text-lg font-bold text-white">
-                  {formatPercentage(status.performance_summary.r2_score)}
+                  {formatPercentage(status.performance_summary?.r2_score)}
                 </p>
               </div>
             </div>
