@@ -1,26 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import OnboardingFlow from '../src/components/onboarding/OnboardingFlow';
 import StickyHeader from '../src/components/StickyHeader';
 import HeroSection from '../src/components/HeroSection';
 import GasPriceGraph from '../src/components/GasPriceGraph';
-import GasLeaderboard from '../src/components/GasLeaderboard';
-import GasPriceTable from '../src/components/GasPriceTable';
 import PredictionCards from '../src/components/PredictionCards';
-import SavingsCalculator from '../src/components/SavingsCalculator';
-import ModelAccuracy from '../src/components/ModelAccuracy';
-import UserTransactionHistory from '../src/components/UserTransactionHistory';
-import SavingsLeaderboard from '../src/components/SavingsLeaderboard';
-import BestTimeWidget from '../src/components/BestTimeWidget';
 import RelativePriceIndicator from '../src/components/RelativePriceIndicator';
-import ValidationMetricsDashboard from '../src/components/ValidationMetricsDashboard';
-import NetworkIntelligencePanel from '../src/components/NetworkIntelligencePanel';
 import ModelStatusWidget from '../src/components/ModelStatusWidget';
 import DataCollectionProgress from '../src/components/DataCollectionProgress';
-import FarcasterWidget from '../src/components/FarcasterWidget';
-import SocialProof from '../src/components/SocialProof';
 import { checkHealth, fetchPredictions } from '../src/api/gasApi';
 import { getCurrentAccount, onAccountsChanged } from '../src/utils/wallet';
 import { fetchLiveBaseGas } from '../src/utils/baseRpc';
+
+// Lazy load heavy components
+const GasLeaderboard = lazy(() => import('../src/components/GasLeaderboard'));
+const GasPriceTable = lazy(() => import('../src/components/GasPriceTable'));
+const SavingsCalculator = lazy(() => import('../src/components/SavingsCalculator'));
+const ModelAccuracy = lazy(() => import('../src/components/ModelAccuracy'));
+const UserTransactionHistory = lazy(() => import('../src/components/UserTransactionHistory'));
+const SavingsLeaderboard = lazy(() => import('../src/components/SavingsLeaderboard'));
+const BestTimeWidget = lazy(() => import('../src/components/BestTimeWidget'));
+const ValidationMetricsDashboard = lazy(() => import('../src/components/ValidationMetricsDashboard'));
+const NetworkIntelligencePanel = lazy(() => import('../src/components/NetworkIntelligencePanel'));
+const FarcasterWidget = lazy(() => import('../src/components/FarcasterWidget'));
+const SocialProof = lazy(() => import('../src/components/SocialProof'));
+
+// Loading component for Suspense
+const ComponentLoader = () => (
+  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 animate-pulse">
+    <div className="h-32 bg-slate-700/50 rounded"></div>
+  </div>
+);
 
 const Dashboard: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(
@@ -119,7 +128,9 @@ const Dashboard: React.FC = () => {
 
       <div className="container" style={{ padding: 'var(--space-lg) var(--space-xl)', paddingTop: 'var(--space-2xl)' }}>
         {/* Social Proof Banner */}
-        <SocialProof />
+        <Suspense fallback={<ComponentLoader />}>
+          <SocialProof />
+        </Suspense>
 
         {/* Hero Section */}
         <HeroSection currentGas={currentGas} predictions={predictions} />
@@ -127,7 +138,9 @@ const Dashboard: React.FC = () => {
         <main style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-xl)' }}>
           {/* Farcaster Widget - Only shows when in Farcaster context */}
           <div style={{ gridColumn: 'span 12' }}>
-            <FarcasterWidget />
+            <Suspense fallback={<ComponentLoader />}>
+              <FarcasterWidget />
+            </Suspense>
           </div>
 
           {/* Week 1 Improvements: Relative Price Indicator + Best Time Widget */}
@@ -136,7 +149,9 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <BestTimeWidget currentGas={currentGas} />
+            <Suspense fallback={<ComponentLoader />}>
+              <BestTimeWidget currentGas={currentGas} />
+            </Suspense>
           </div>
 
           {/* Gas Price Graph */}
@@ -162,40 +177,56 @@ const Dashboard: React.FC = () => {
 
           {/* Network Intelligence Panel */}
           <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <NetworkIntelligencePanel />
+            <Suspense fallback={<ComponentLoader />}>
+              <NetworkIntelligencePanel />
+            </Suspense>
           </div>
 
           {/* Validation Metrics Dashboard - Full Width */}
           <div style={{ gridColumn: 'span 12' }}>
-            <ValidationMetricsDashboard />
+            <Suspense fallback={<ComponentLoader />}>
+              <ValidationMetricsDashboard />
+            </Suspense>
           </div>
 
           {/* Model Accuracy Dashboard */}
           <div style={{ gridColumn: 'span 12' }}>
-            <ModelAccuracy />
+            <Suspense fallback={<ComponentLoader />}>
+              <ModelAccuracy />
+            </Suspense>
           </div>
 
           <div style={{ gridColumn: 'span 12 / span 4' }}>
-            <GasLeaderboard />
+            <Suspense fallback={<ComponentLoader />}>
+              <GasLeaderboard />
+            </Suspense>
             <div style={{ marginTop: 'var(--space-lg)' }}>
               {currentGas > 0 && (
-                <SavingsCalculator
-                  currentGas={currentGas}
-                  predictions={predictions}
-                  ethPrice={3000}
-                />
+                <Suspense fallback={<ComponentLoader />}>
+                  <SavingsCalculator
+                    currentGas={currentGas}
+                    predictions={predictions}
+                    ethPrice={3000}
+                  />
+                </Suspense>
               )}
             </div>
             {walletAddress && (
               <div style={{ marginTop: 'var(--space-lg)' }}>
-                <UserTransactionHistory address={walletAddress} />
+                <Suspense fallback={<ComponentLoader />}>
+                  <UserTransactionHistory address={walletAddress} />
+                </Suspense>
               </div>
             )}
           </div>
           <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <GasPriceTable />
+            <Suspense fallback={<ComponentLoader />}>
+              <GasPriceTable />
+            </Suspense>
             <div style={{ marginTop: 'var(--space-lg)' }}>
-              <SavingsLeaderboard walletAddress={walletAddress} />
+              <Suspense fallback={<ComponentLoader />}>
+                <SavingsLeaderboard walletAddress={walletAddress} />
+              </Suspense>
             </div>
           </div>
         </main>

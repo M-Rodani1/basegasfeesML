@@ -67,6 +67,40 @@ def create_app():
     app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
     app.register_blueprint(base_config_bp)  # No prefix - serves at root for /config.json
     
+    # Add HTTP caching headers
+    @app.after_request
+    def add_cache_headers(response):
+        """Add appropriate caching headers based on endpoint"""
+        from flask import request
+
+        # Only cache GET requests
+        if request.method == 'GET':
+            path = request.path
+
+            # Long cache for static endpoints (5 minutes)
+            if any(x in path for x in ['/config.json', '/manifest.json', '/api/stats']):
+                response.headers['Cache-Control'] = 'public, max-age=300'
+
+            # Medium cache for historical data (1 minute)
+            elif '/historical' in path or '/analytics' in path:
+                response.headers['Cache-Control'] = 'public, max-age=60'
+
+            # Short cache for real-time data (30 seconds)
+            elif any(x in path for x in ['/current', '/predictions', '/network-state']):
+                response.headers['Cache-Control'] = 'public, max-age=30'
+
+            # No cache for health checks and admin endpoints
+            elif any(x in path for x in ['/health', '/validation', '/retraining']):
+                response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+
+            # Default: short cache
+            else:
+                response.headers['Cache-Control'] = 'public, max-age=30'
+
+        return response
+
     @app.route('/')
     def index():
         return jsonify({

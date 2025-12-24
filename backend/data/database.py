@@ -10,21 +10,21 @@ Base = declarative_base()
 
 class GasPrice(Base):
     __tablename__ = 'gas_prices'
-    
+
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.now)
+    timestamp = Column(DateTime, default=datetime.now, index=True)
     current_gas = Column(Float)
     base_fee = Column(Float)
     priority_fee = Column(Float)
-    block_number = Column(Integer)
+    block_number = Column(Integer, index=True)
 
 
 class Prediction(Base):
     __tablename__ = 'predictions'
 
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.now)
-    horizon = Column(String)  # '1h', '4h', '24h'
+    timestamp = Column(DateTime, default=datetime.now, index=True)
+    horizon = Column(String, index=True)  # '1h', '4h', '24h'
     predicted_gas = Column(Float)
     actual_gas = Column(Float, nullable=True)
     model_version = Column(String)
@@ -34,8 +34,8 @@ class OnChainFeatures(Base):
     __tablename__ = 'onchain_features'
 
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.now)
-    block_number = Column(Integer)
+    timestamp = Column(DateTime, default=datetime.now, index=True)
+    block_number = Column(Integer, index=True)
     tx_count = Column(Integer)
     gas_used = Column(Integer)
     gas_limit = Column(Integer)
