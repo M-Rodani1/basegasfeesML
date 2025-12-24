@@ -21,7 +21,7 @@ const DataCollectionProgress: React.FC = () => {
 
   useEffect(() => {
     fetchDataQuality();
-    const interval = setInterval(fetchDataQuality, 60000); // Refresh every minute
+    const interval = setInterval(fetchDataQuality, 5000); // Refresh every 5 seconds for live updates
     return () => clearInterval(interval);
   }, []);
 
