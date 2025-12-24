@@ -5,7 +5,6 @@ Base Gas Price Prediction System - ML-powered gas fee predictions
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from api.routes import api_bp
@@ -21,6 +20,16 @@ from api.alert_routes import alert_bp
 from api.middleware import limiter, error_handlers, log_request
 from config import Config
 from utils.logger import logger
+
+# Try to import flask-socketio, but don't fail if it's not available
+try:
+    from flask_socketio import SocketIO, emit
+    SOCKETIO_AVAILABLE = True
+except ImportError:
+    SOCKETIO_AVAILABLE = False
+    SocketIO = None
+    emit = None
+    logger.warning("flask-socketio not available - WebSocket features disabled")
 import os
 import threading
 from services.gas_collector_service import GasCollectorService
@@ -170,18 +179,23 @@ def create_app():
 
 app = create_app()
 
-# Initialize SocketIO for WebSocket support
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
-
-# Store socketio reference in app
-app.socketio = socketio
+# Initialize SocketIO for WebSocket support (if available)
+if SOCKETIO_AVAILABLE:
+    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+    app.socketio = socketio
+    logger.info("WebSocket support enabled")
+else:
+    socketio = None
+    app.socketio = None
+    logger.warning("WebSocket support disabled - flask-socketio not installed")
 
 # Start data collection with socketio after both are initialized
 use_worker_process = os.getenv('USE_WORKER_PROCESS', 'false').lower() == 'true'
 
 if not use_worker_process:
     if not Config.DEBUG or os.getenv('ENABLE_DATA_COLLECTION', 'true').lower() == 'true':
-        logger.info("Starting data collection in background threads with WebSocket support")
+        websocket_status = "with WebSocket support" if SOCKETIO_AVAILABLE else "without WebSocket"
+        logger.info(f"Starting data collection in background threads {websocket_status}")
 
         # Import here to avoid circular dependency
         def start_collection_with_socketio():
@@ -193,7 +207,7 @@ if not use_worker_process:
             logger.info(f"Collection interval: {Config.COLLECTION_INTERVAL} seconds")
             logger.info("="*60)
 
-            gas_service = GasCollectorService(Config.COLLECTION_INTERVAL, socketio=socketio)
+            gas_service = GasCollectorService(Config.COLLECTION_INTERVAL, socketio=socketio if SOCKETIO_AVAILABLE else None)
             onchain_service = OnChainCollectorService(Config.COLLECTION_INTERVAL)
 
             gas_thread = threading.Thread(target=gas_service.start, name="GasCollector", daemon=True)
@@ -211,22 +225,30 @@ if not use_worker_process:
 else:
     logger.info("Skipping background threads - using separate worker process")
 
-@socketio.on('connect')
-def handle_connect():
-    """Handle client WebSocket connection"""
-    logger.info('Client connected to WebSocket')
-    emit('connection_established', {'message': 'Connected to gas price updates'})
+if SOCKETIO_AVAILABLE:
+    @socketio.on('connect')
+    def handle_connect():
+        """Handle client WebSocket connection"""
+        logger.info('Client connected to WebSocket')
+        emit('connection_established', {'message': 'Connected to gas price updates'})
 
-@socketio.on('disconnect')
-def handle_disconnect():
-    """Handle client WebSocket disconnection"""
-    logger.info('Client disconnected from WebSocket')
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        """Handle client WebSocket disconnection"""
+        logger.info('Client disconnected from WebSocket')
 
 
 if __name__ == '__main__':
-    socketio.run(
-        app,
-        debug=Config.DEBUG,
-        port=Config.PORT,
-        host='0.0.0.0'
-    )
+    if SOCKETIO_AVAILABLE:
+        socketio.run(
+            app,
+            debug=Config.DEBUG,
+            port=Config.PORT,
+            host='0.0.0.0'
+        )
+    else:
+        app.run(
+            debug=Config.DEBUG,
+            port=Config.PORT,
+            host='0.0.0.0'
+        )
