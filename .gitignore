@@ -79,3 +79,5 @@ FRONTEND_PRESENTATION.md
 *.txt
 !requirements.txt
 .wrangler/
+node_modules/
+backend/node_modules/
