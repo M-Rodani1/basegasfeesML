@@ -25,7 +25,6 @@ export default defineConfig(({ mode }) => {
             manualChunks: {
               'vendor-react': ['react', 'react-dom', 'react-router-dom'],
               'vendor-charts': ['recharts'],
-              'vendor-web3': ['ethers', 'viem'],
               'vendor-ui': ['lucide-react', 'framer-motion']
             }
           }
