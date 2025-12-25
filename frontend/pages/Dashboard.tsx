@@ -26,6 +26,7 @@ const FarcasterWidget = lazy(() => import('../src/components/FarcasterWidget'));
 const SocialProof = lazy(() => import('../src/components/SocialProof'));
 const GasAlertSettings = lazy(() => import('../src/components/GasAlertSettings'));
 const TransactionCostCalculator = lazy(() => import('../src/components/TransactionCostCalculator'));
+const GasPatternHeatmap = lazy(() => import('../src/components/GasPatternHeatmap'));
 
 const Dashboard: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(
@@ -160,6 +161,11 @@ const Dashboard: React.FC = () => {
           <div style={{ gridColumn: 'span 12' }}>
             <GasPriceGraph />
           </div>
+
+          {/* Historical Gas Patterns Heatmap */}
+          <LazySection style={{ gridColumn: 'span 12' }} rootMargin="250px">
+            <GasPatternHeatmap />
+          </LazySection>
 
           {/* Prediction Cards */}
           <div style={{ gridColumn: 'span 12' }}>
