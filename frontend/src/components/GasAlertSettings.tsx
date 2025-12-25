@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, Plus, Trash2, Power, Check, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, Plus, Trash2, Power, Check, X, BellOff, BellRing } from 'lucide-react';
+import {
+  isNotificationSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  checkAndTriggerAlerts
+} from '../utils/pushNotifications';
 
 interface Alert {
   id: number;
@@ -20,6 +26,9 @@ const GasAlertSettings: React.FC<GasAlertSettingsProps> = ({ currentGas, walletA
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<'granted' | 'denied' | 'default'>('default');
+  const [requestingPermission, setRequestingPermission] = useState(false);
+  const previousGasRef = useRef<number | null>(null);
 
   // Form state
   const [alertType, setAlertType] = useState<'below' | 'above'>('below');
@@ -29,11 +38,35 @@ const GasAlertSettings: React.FC<GasAlertSettingsProps> = ({ currentGas, walletA
   const API_BASE = import.meta.env.VITE_API_URL || 'https://basegasfeesml-production.up.railway.app/api';
   const userId = walletAddress || 'anonymous';
 
+  // Check notification permission on mount
+  useEffect(() => {
+    if (isNotificationSupported()) {
+      setNotificationPermission(getNotificationPermission());
+    }
+  }, []);
+
   useEffect(() => {
     if (userId) {
       fetchAlerts();
     }
   }, [userId]);
+
+  // Check alerts when gas price changes
+  useEffect(() => {
+    if (alerts.length > 0 && currentGas > 0 && notificationPermission === 'granted') {
+      const formattedAlerts = alerts
+        .filter(a => a.is_active)
+        .map(a => ({
+          id: a.id,
+          alert_type: a.alert_type as 'below' | 'above',
+          threshold_gwei: a.threshold_gwei,
+          is_active: a.is_active
+        }));
+
+      checkAndTriggerAlerts(currentGas, formattedAlerts, previousGasRef.current);
+    }
+    previousGasRef.current = currentGas;
+  }, [currentGas, alerts, notificationPermission]);
 
   const fetchAlerts = async () => {
     try {
@@ -119,6 +152,23 @@ const GasAlertSettings: React.FC<GasAlertSettingsProps> = ({ currentGas, walletA
     return (currentGas * 0.8).toFixed(4); // Suggest 20% below current
   };
 
+  const handleRequestPermission = async () => {
+    setRequestingPermission(true);
+    const permission = await requestNotificationPermission();
+    setNotificationPermission(permission);
+    setRequestingPermission(false);
+  };
+
+  const sendTestNotification = () => {
+    if (notificationPermission !== 'granted') return;
+
+    new Notification('Test Alert', {
+      body: `Test notification working! Current gas: ${currentGas.toFixed(4)} gwei`,
+      icon: '/logo.svg',
+      tag: 'test-notification'
+    });
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-xl">
       {/* Header */}
@@ -140,6 +190,62 @@ const GasAlertSettings: React.FC<GasAlertSettingsProps> = ({ currentGas, walletA
           {showCreateForm ? 'Cancel' : 'New Alert'}
         </button>
       </div>
+
+      {/* Notification Permission Banner */}
+      {isNotificationSupported() && notificationPermission !== 'granted' && (
+        <div className={`mb-6 p-4 rounded-lg border flex items-center justify-between ${
+          notificationPermission === 'denied'
+            ? 'bg-red-500/10 border-red-500/30'
+            : 'bg-yellow-500/10 border-yellow-500/30'
+        }`}>
+          <div className="flex items-center gap-3">
+            {notificationPermission === 'denied' ? (
+              <BellOff className="w-5 h-5 text-red-400" />
+            ) : (
+              <BellRing className="w-5 h-5 text-yellow-400" />
+            )}
+            <div>
+              <p className={`text-sm font-medium ${
+                notificationPermission === 'denied' ? 'text-red-400' : 'text-yellow-400'
+              }`}>
+                {notificationPermission === 'denied'
+                  ? 'Notifications Blocked'
+                  : 'Enable Push Notifications'}
+              </p>
+              <p className="text-xs text-gray-400">
+                {notificationPermission === 'denied'
+                  ? 'Enable in browser settings to receive alerts'
+                  : 'Get notified even when the browser is in the background'}
+              </p>
+            </div>
+          </div>
+          {notificationPermission === 'default' && (
+            <button
+              onClick={handleRequestPermission}
+              disabled={requestingPermission}
+              className="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {requestingPermission ? 'Requesting...' : 'Enable'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Notification Enabled Banner */}
+      {notificationPermission === 'granted' && (
+        <div className="mb-6 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BellRing className="w-4 h-4 text-green-400" />
+            <span className="text-sm text-green-400">Push notifications enabled</span>
+          </div>
+          <button
+            onClick={sendTestNotification}
+            className="text-xs text-green-400 hover:text-green-300 underline"
+          >
+            Send test
+          </button>
+        </div>
+      )}
 
       {/* Create Form */}
       {showCreateForm && (
