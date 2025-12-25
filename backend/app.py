@@ -52,23 +52,16 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # CORS configuration - Allow all origins
+    # CORS configuration - Allow all origins for all routes
     CORS(app,
          resources={
-             r"/api/*": {
+             r"/*": {
                  "origins": "*",
                  "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-                 "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma"]
-             },
-             r"/config.json": {
-                 "origins": "*",
-                 "methods": ["GET", "OPTIONS"],
-                 "allow_headers": ["Content-Type"]
-             },
-             r"/manifest.json": {
-                 "origins": "*",
-                 "methods": ["GET", "OPTIONS"],
-                 "allow_headers": ["Content-Type"]
+                 "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma"],
+                 "expose_headers": ["Content-Type", "Cache-Control"],
+                 "supports_credentials": False,
+                 "max_age": 3600
              }
          })
     
