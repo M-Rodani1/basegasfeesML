@@ -78,6 +78,18 @@ class DatabaseManager:
             pool_pre_ping=True,
             connect_args=connect_args
         )
+
+        # Enable WAL mode for SQLite to allow concurrent reads/writes
+        if Config.DATABASE_URL.startswith('sqlite'):
+            from sqlalchemy import event
+            @event.listens_for(self.engine, "connect")
+            def set_sqlite_pragma(dbapi_conn, connection_record):
+                cursor = dbapi_conn.cursor()
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA synchronous=NORMAL")
+                cursor.execute("PRAGMA busy_timeout=30000")  # 30 second busy timeout
+                cursor.close()
+
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
     
