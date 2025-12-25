@@ -150,7 +150,7 @@ const DataCollectionProgress: React.FC = () => {
         </div>
 
         {/* Enhanced Progress Bar with Segments */}
-        <div className="relative pb-6">
+        <div className="relative pb-8">
           <div className="w-full bg-slate-700/50 rounded-full h-6 overflow-hidden shadow-inner border border-slate-600">
             <div
               className={`h-full ${getProgressColor()} transition-all duration-700 ease-out relative overflow-hidden`}
@@ -165,7 +165,7 @@ const DataCollectionProgress: React.FC = () => {
                   <div
                     key={i}
                     className="flex-1 border-r border-white/10 last:border-r-0"
-                    style={{ opacity: i * 10 <= dataQuality.progress_percent ? 1 : 0.3 }}
+                    style={{ opacity: (i + 1) * 10 <= dataQuality.progress_percent ? 1 : 0.3 }}
                   ></div>
                 ))}
               </div>
@@ -178,7 +178,10 @@ const DataCollectionProgress: React.FC = () => {
               <div
                 key={milestone}
                 className="absolute top-0 h-6"
-                style={{ left: `${milestone}%`, transform: 'translateX(-50%)' }}
+                style={{
+                  left: `${milestone}%`,
+                  transform: milestone === 0 ? 'translateX(0)' : milestone === 100 ? 'translateX(-100%)' : 'translateX(-50%)'
+                }}
               >
                 <div className={`w-px h-full ${dataQuality.progress_percent >= milestone ? 'bg-white/30' : 'bg-slate-500/30'}`}></div>
               </div>
@@ -186,14 +189,17 @@ const DataCollectionProgress: React.FC = () => {
           </div>
 
           {/* Milestone labels below the bar */}
-          <div className="absolute top-8 left-0 w-full flex justify-between pointer-events-none">
+          <div className="absolute top-8 left-0 w-full pointer-events-none">
             {[0, 25, 50, 75, 100].map((milestone) => (
               <div
                 key={milestone}
-                className={`text-xs font-medium transition-colors ${
+                className={`absolute text-xs font-medium transition-colors whitespace-nowrap ${
                   dataQuality.progress_percent >= milestone ? 'text-cyan-400' : 'text-gray-600'
                 }`}
-                style={{ width: '30px', marginLeft: milestone === 0 ? '0' : '-15px', textAlign: 'center' }}
+                style={{
+                  left: `${milestone}%`,
+                  transform: milestone === 0 ? 'translateX(0)' : milestone === 100 ? 'translateX(-100%)' : 'translateX(-50%)'
+                }}
               >
                 {milestone}%
               </div>
