@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Database, TrendingUp, Calendar, Target, Zap } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 
 interface DataQuality {
   total_records: number;
@@ -16,19 +17,56 @@ const DataCollectionProgress: React.FC = () => {
   const [dataQuality, setDataQuality] = useState<DataQuality | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || 'https://basegasfeesml.onrender.com/api';
+  const SOCKET_URL = API_BASE.replace('/api', '');
 
   useEffect(() => {
+    // Initial fetch
     fetchDataQuality();
-    const interval = setInterval(fetchDataQuality, 5000); // Refresh every 5 seconds for live updates
-    return () => clearInterval(interval);
+
+    // Connect to WebSocket for real-time updates
+    try {
+      socketRef.current = io(SOCKET_URL, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
+
+      socketRef.current.on('connect', () => {
+        console.log('✓ Connected to WebSocket for data quality updates');
+      });
+
+      socketRef.current.on('data_quality_update', (data: DataQuality) => {
+        setDataQuality(data);
+        setLoading(false);
+        setError(null);
+      });
+
+      socketRef.current.on('connect_error', (err) => {
+        console.warn('WebSocket connection error, falling back to polling:', err.message);
+        // Fallback to polling if WebSocket fails
+        const interval = setInterval(fetchDataQuality, 15000);
+        return () => clearInterval(interval);
+      });
+    } catch (err) {
+      console.warn('WebSocket not available, using polling fallback');
+      const interval = setInterval(fetchDataQuality, 15000);
+      return () => clearInterval(interval);
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
   }, []);
 
   const fetchDataQuality = async () => {
     try {
       setError(null);
-      // Add cache-busting timestamp to ensure fresh data
       const response = await fetch(`${API_BASE}/retraining/check-data?t=${Date.now()}`, {
         cache: 'no-cache',
         headers: {

@@ -25,7 +25,11 @@ export default defineConfig(({ mode }) => {
             manualChunks: {
               'vendor-react': ['react', 'react-dom', 'react-router-dom'],
               'vendor-charts': ['recharts'],
-              'vendor-ui': ['lucide-react', 'framer-motion']
+              'vendor-ui': ['lucide-react', 'framer-motion'],
+              'vendor-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
+              'vendor-sentry': ['@sentry/react'],
+              'vendor-socket': ['socket.io-client'],
+              'vendor-toast': ['react-hot-toast']
             }
           }
         },
@@ -34,11 +38,21 @@ export default defineConfig(({ mode }) => {
           compress: {
             drop_console: true,
             drop_debugger: true,
-            pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace']
+            pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+            passes: 2
+          },
+          mangle: {
+            safari10: true
           }
         },
         sourcemap: false,
-        chunkSizeWarningLimit: 1000
+        chunkSizeWarningLimit: 500,
+        cssCodeSplit: true,
+        assetsInlineLimit: 4096,
+        cssMinify: true
+      },
+      css: {
+        devSourcemap: false
       }
     };
 });

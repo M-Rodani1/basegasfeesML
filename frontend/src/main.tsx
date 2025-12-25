@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { QueryProvider } from './providers/QueryProvider';
 import { ToastProvider } from './providers/ToastProvider';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { registerServiceWorker } from './utils/registerSW';
 import './index.css';
 
 // Initialize Sentry for error tracking
@@ -23,6 +24,9 @@ if (sentryDsn) {
     environment: import.meta.env.MODE
   });
 }
+
+// Register service worker for caching
+registerServiceWorker();
 
 const root = document.getElementById('root');
 if (root) {

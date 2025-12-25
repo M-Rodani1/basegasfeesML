@@ -41,13 +41,19 @@
 
     <!-- Farcaster Mini App Meta Tags -->
     <meta property="fc:miniapp" content="vNext" />
-    <meta property="fc:miniapp:image" content="https://basegasfeesml.netlify.app/og-image.png" />
+    <meta property="fc:miniapp:image" content="https://basegasfeesml.pages.dev/og-image.png" />
     <meta property="fc:miniapp:launch_button" content="Open Gas Optimiser" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    
+
+    <!-- Performance: Resource Hints -->
+    <link rel="preconnect" href="https://basegasfeesml-production.up.railway.app" crossorigin />
+    <link rel="dns-prefetch" href="https://basegasfeesml-production.up.railway.app" />
+    <link rel="preconnect" href="https://mainnet.base.org" crossorigin />
+    <link rel="dns-prefetch" href="https://mainnet.base.org" />
+
     <title>Base Gas Optimiser - Save Up to 65% on Gas Fees | AI-Powered Predictions</title>
     
     <!-- JSON-LD Structured Data for SEO -->
@@ -78,6 +84,35 @@
   </head>
   <body class="bg-gray-900">
     <div id="root"></div>
+
+    <!-- Preload critical API data before app bundle loads -->
+    <script>
+      (function() {
+        const API_BASE = 'https://basegasfeesml-production.up.railway.app/api';
+
+        // Preload data quality info for faster initial render
+        window.__INITIAL_DATA__ = {
+          dataQuality: fetch(API_BASE + '/retraining/check-data')
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null),
+
+          // Preload current gas price
+          gasPrice: fetch('https://mainnet.base.org', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_gasPrice',
+              params: [],
+              id: 1
+            })
+          })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        };
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

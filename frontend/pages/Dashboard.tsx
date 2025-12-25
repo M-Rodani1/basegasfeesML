@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, lazy } from 'react';
 import OnboardingFlow from '../src/components/onboarding/OnboardingFlow';
 import StickyHeader from '../src/components/StickyHeader';
 import HeroSection from '../src/components/HeroSection';
@@ -7,11 +7,12 @@ import PredictionCards from '../src/components/PredictionCards';
 import RelativePriceIndicator from '../src/components/RelativePriceIndicator';
 import ModelStatusWidget from '../src/components/ModelStatusWidget';
 import DataCollectionProgress from '../src/components/DataCollectionProgress';
+import { LazySection } from '../src/components/LazySection';
 import { checkHealth, fetchPredictions } from '../src/api/gasApi';
 import { getCurrentAccount, onAccountsChanged } from '../src/utils/wallet';
 import { fetchLiveBaseGas } from '../src/utils/baseRpc';
 
-// Lazy load heavy components
+// Lazy load heavy components with aggressive code splitting
 const GasLeaderboard = lazy(() => import('../src/components/GasLeaderboard'));
 const GasPriceTable = lazy(() => import('../src/components/GasPriceTable'));
 const SavingsCalculator = lazy(() => import('../src/components/SavingsCalculator'));
@@ -25,13 +26,6 @@ const FarcasterWidget = lazy(() => import('../src/components/FarcasterWidget'));
 const SocialProof = lazy(() => import('../src/components/SocialProof'));
 const GasAlertSettings = lazy(() => import('../src/components/GasAlertSettings'));
 const TransactionCostCalculator = lazy(() => import('../src/components/TransactionCostCalculator'));
-
-// Loading component for Suspense
-const ComponentLoader = () => (
-  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 animate-pulse">
-    <div className="h-32 bg-slate-700/50 rounded"></div>
-  </div>
-);
 
 const Dashboard: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(
@@ -129,46 +123,38 @@ const Dashboard: React.FC = () => {
       <StickyHeader apiStatus={apiStatus} currentGas={currentGas} />
 
       <div className="container" style={{ padding: 'var(--space-lg) var(--space-xl)', paddingTop: 'var(--space-2xl)' }}>
-        {/* Social Proof Banner */}
-        <Suspense fallback={<ComponentLoader />}>
+        {/* Social Proof Banner - Lazy loaded */}
+        <LazySection rootMargin="100px">
           <SocialProof />
-        </Suspense>
+        </LazySection>
 
-        {/* Hero Section */}
+        {/* Hero Section - Critical, load immediately */}
         <HeroSection currentGas={currentGas} predictions={predictions} />
 
         <main style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-xl)' }}>
           {/* Farcaster Widget - Only shows when in Farcaster context */}
-          <div style={{ gridColumn: 'span 12' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <FarcasterWidget />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12' }} rootMargin="150px">
+            <FarcasterWidget />
+          </LazySection>
 
           {/* Week 1 Improvements: Relative Price Indicator + Best Time Widget */}
           <div style={{ gridColumn: 'span 12 / span 4' }}>
             <RelativePriceIndicator currentGas={currentGas} />
           </div>
 
-          <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <BestTimeWidget currentGas={currentGas} />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12 / span 8' }} rootMargin="150px">
+            <BestTimeWidget currentGas={currentGas} />
+          </LazySection>
 
           {/* Transaction Cost Calculator */}
-          <div style={{ gridColumn: 'span 12 / span 6' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <TransactionCostCalculator currentGas={currentGas} ethPrice={3000} />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12 / span 6' }} rootMargin="200px">
+            <TransactionCostCalculator currentGas={currentGas} ethPrice={3000} />
+          </LazySection>
 
           {/* Gas Price Alerts */}
-          <div style={{ gridColumn: 'span 12 / span 6' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <GasAlertSettings currentGas={currentGas} />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12 / span 6' }} rootMargin="200px">
+            <GasAlertSettings currentGas={currentGas} />
+          </LazySection>
 
           {/* Gas Price Graph */}
           <div style={{ gridColumn: 'span 12' }}>
@@ -192,59 +178,48 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Network Intelligence Panel */}
-          <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <NetworkIntelligencePanel />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12 / span 8' }} rootMargin="300px">
+            <NetworkIntelligencePanel />
+          </LazySection>
 
           {/* Validation Metrics Dashboard - Full Width */}
-          <div style={{ gridColumn: 'span 12' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <ValidationMetricsDashboard />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12' }} rootMargin="400px">
+            <ValidationMetricsDashboard />
+          </LazySection>
 
           {/* Model Accuracy Dashboard */}
-          <div style={{ gridColumn: 'span 12' }}>
-            <Suspense fallback={<ComponentLoader />}>
-              <ModelAccuracy />
-            </Suspense>
-          </div>
+          <LazySection style={{ gridColumn: 'span 12' }} rootMargin="400px">
+            <ModelAccuracy />
+          </LazySection>
 
-          <div style={{ gridColumn: 'span 12 / span 4' }}>
-            <Suspense fallback={<ComponentLoader />}>
+          <LazySection style={{ gridColumn: 'span 12 / span 4' }} rootMargin="500px">
+            <div>
               <GasLeaderboard />
-            </Suspense>
-            <div style={{ marginTop: 'var(--space-lg)' }}>
-              {currentGas > 0 && (
-                <Suspense fallback={<ComponentLoader />}>
+              <div style={{ marginTop: 'var(--space-lg)' }}>
+                {currentGas > 0 && (
                   <SavingsCalculator
                     currentGas={currentGas}
                     predictions={predictions}
                     ethPrice={3000}
                   />
-                </Suspense>
+                )}
+              </div>
+              {walletAddress && (
+                <div style={{ marginTop: 'var(--space-lg)' }}>
+                  <UserTransactionHistory address={walletAddress} />
+                </div>
               )}
             </div>
-            {walletAddress && (
-              <div style={{ marginTop: 'var(--space-lg)' }}>
-                <Suspense fallback={<ComponentLoader />}>
-                  <UserTransactionHistory address={walletAddress} />
-                </Suspense>
-              </div>
-            )}
-          </div>
-          <div style={{ gridColumn: 'span 12 / span 8' }}>
-            <Suspense fallback={<ComponentLoader />}>
+          </LazySection>
+
+          <LazySection style={{ gridColumn: 'span 12 / span 8' }} rootMargin="500px">
+            <div>
               <GasPriceTable />
-            </Suspense>
-            <div style={{ marginTop: 'var(--space-lg)' }}>
-              <Suspense fallback={<ComponentLoader />}>
+              <div style={{ marginTop: 'var(--space-lg)' }}>
                 <SavingsLeaderboard walletAddress={walletAddress} />
-              </Suspense>
+              </div>
             </div>
-          </div>
+          </LazySection>
         </main>
 
         <footer style={{ marginTop: 'var(--space-3xl)', padding: 'var(--space-2xl) 0', textAlign: 'center', borderTop: '1px solid var(--border)' }}>
