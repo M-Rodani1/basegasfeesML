@@ -132,20 +132,72 @@ const DataCollectionProgress: React.FC = () => {
 
       {/* Progress Bar */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-300">
-            {Math.min(100, dataQuality.progress_percent).toFixed(1)}% Complete
-          </span>
-          <span className="text-xs text-gray-400">
-            {dataQuality.date_range_days} / {dataQuality.recommended_days} days
-          </span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-white">
+              {Math.min(100, dataQuality.progress_percent).toFixed(1)}%
+            </span>
+            <span className="text-sm text-gray-400">Complete</span>
+          </div>
+          <div className="text-right">
+            <div className="text-sm font-medium text-gray-300">
+              {dataQuality.date_range_days} / {dataQuality.recommended_days} days
+            </div>
+            <div className="text-xs text-gray-500">
+              {formatNumber(dataQuality.total_records)} records collected
+            </div>
+          </div>
         </div>
-        <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-          <div
-            className={`h-full ${getProgressColor()} transition-all duration-500 ease-out rounded-full`}
-            style={{ width: `${Math.min(100, dataQuality.progress_percent)}%` }}
-          >
-            <div className="h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+
+        {/* Enhanced Progress Bar with Segments */}
+        <div className="relative">
+          <div className="w-full bg-slate-700/50 rounded-full h-6 overflow-hidden shadow-inner border border-slate-600">
+            <div
+              className={`h-full ${getProgressColor()} transition-all duration-700 ease-out relative overflow-hidden`}
+              style={{ width: `${Math.min(100, dataQuality.progress_percent)}%` }}
+            >
+              {/* Animated shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+
+              {/* Progress segments */}
+              <div className="absolute inset-0 flex">
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 border-r border-white/10 last:border-r-0"
+                    style={{ opacity: i * 10 <= dataQuality.progress_percent ? 1 : 0.3 }}
+                  ></div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Milestone markers */}
+          <div className="absolute top-0 w-full h-6 flex justify-between items-center pointer-events-none">
+            {[0, 25, 50, 75, 100].map((milestone) => (
+              <div
+                key={milestone}
+                className="relative"
+                style={{ left: `${milestone}%`, transform: 'translateX(-50%)' }}
+              >
+                <div className={`w-0.5 h-6 ${dataQuality.progress_percent >= milestone ? 'bg-white/40' : 'bg-slate-500/40'}`}></div>
+                <div className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium ${
+                  dataQuality.progress_percent >= milestone ? 'text-white' : 'text-gray-500'
+                }`}>
+                  {milestone}%
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Days progress indicator */}
+        <div className="mt-8 flex justify-between text-xs">
+          <div className="text-gray-400">
+            Started: {formatDate(dataQuality.oldest_timestamp).split(' ')[0]}
+          </div>
+          <div className="text-gray-400">
+            Target: {dataQuality.recommended_days} days
           </div>
         </div>
       </div>

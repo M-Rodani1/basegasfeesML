@@ -105,6 +105,12 @@ html, body {
   background-size: 1000px 100%;
 }
 
+.animate-shimmer {
+  animation: shimmer 2.5s infinite linear;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background-size: 200% 100%;
+}
+
 /* Smooth transitions for all interactive elements */
 button, a, [role="button"] {
   transition: all 0.2s ease-in-out;
