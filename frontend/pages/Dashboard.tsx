@@ -11,6 +11,7 @@ import { LazySection } from '../src/components/LazySection';
 import { checkHealth, fetchPredictions } from '../src/api/gasApi';
 import { getCurrentAccount, onAccountsChanged } from '../src/utils/wallet';
 import { fetchLiveBaseGas } from '../src/utils/baseRpc';
+import { useEthPrice } from '../src/hooks/useEthPrice';
 
 // Lazy load heavy components with aggressive code splitting
 const GasLeaderboard = lazy(() => import('../src/components/GasLeaderboard'));
@@ -40,6 +41,9 @@ const Dashboard: React.FC = () => {
     '24h': number;
   }>({ '1h': 0, '4h': 0, '24h': 0 });
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
+  // Live ETH price from CoinGecko
+  const { ethPrice, priceChange24h } = useEthPrice(60000); // Update every minute
 
   useEffect(() => {
     const checkAPI = async () => {
@@ -149,7 +153,7 @@ const Dashboard: React.FC = () => {
 
           {/* Transaction Cost Calculator */}
           <LazySection style={{ gridColumn: 'span 12 / span 6' }} rootMargin="200px">
-            <TransactionCostCalculator currentGas={currentGas} ethPrice={3000} />
+            <TransactionCostCalculator currentGas={currentGas} ethPrice={ethPrice} />
           </LazySection>
 
           {/* Gas Price Alerts */}
@@ -206,7 +210,7 @@ const Dashboard: React.FC = () => {
                   <SavingsCalculator
                     currentGas={currentGas}
                     predictions={predictions}
-                    ethPrice={3000}
+                    ethPrice={ethPrice}
                   />
                 )}
               </div>
