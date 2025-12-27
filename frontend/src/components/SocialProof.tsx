@@ -13,7 +13,7 @@ const SocialProof = () => {
                 Hackathon Winner
               </span>
               <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-xs font-semibold rounded">
-                2024
+                2025
               </span>
             </div>
             <p className="text-sm text-gray-400">

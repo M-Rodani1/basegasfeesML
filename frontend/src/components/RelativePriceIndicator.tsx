@@ -65,6 +65,18 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
   }, []);
 
   const getPriceLevel = (current: number, avg: number): PriceLevel => {
+    // If gas is already extremely low in absolute terms, always show as excellent
+    // regardless of relative comparison (prevents "Very High" when gas is 0.0005 gwei)
+    if (current < 0.05) {
+      return {
+        level: 'Excellent',
+        color: 'green',
+        emoji: '🟢',
+        description: 'Gas is extremely low',
+        action: 'Perfect time to transact!'
+      };
+    }
+
     // Prevent division by zero or Infinity
     const ratio = avg === 0 ? (current > 0 ? Infinity : 0) : current / avg;
 
