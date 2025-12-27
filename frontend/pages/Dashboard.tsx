@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
         </LazySection>
 
         {/* Hero Section - Critical, load immediately */}
-        <HeroSection currentGas={currentGas} predictions={predictions} />
+        <HeroSection currentGas={currentGas} predictions={predictions} ethPrice={ethPrice} />
 
         <main style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-xl)' }}>
           {/* Farcaster Widget - Only shows when in Farcaster context */}

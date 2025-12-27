@@ -8,9 +8,18 @@ interface HeroSectionProps {
     '4h': number;
     '24h': number;
   };
+  ethPrice?: number;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions }) => {
+// Calculate USD cost for a typical swap (150k gas)
+const calculateSwapCost = (gasGwei: number, ethPrice: number): string => {
+  const gasUnits = 150000; // Typical Uniswap swap
+  const ethCost = (gasGwei * gasUnits) / 1e9;
+  const usdCost = ethCost * ethPrice;
+  return usdCost < 0.01 ? '<$0.01' : `$${usdCost.toFixed(2)}`;
+};
+
+const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions, ethPrice = 3500 }) => {
   const [previousGas, setPreviousGas] = useState(currentGas);
   const [trend, setTrend] = useState<'up' | 'down' | 'stable'>('stable');
   const [animateValue, setAnimateValue] = useState(false);
@@ -90,6 +99,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions }) =>
                 </div>
               </div>
 
+              {/* Current Gas USD Cost */}
+              {currentGas > 0 && (
+                <div className="mt-2 text-sm text-gray-400">
+                  Swap cost: <span className="text-cyan-400 font-semibold">{calculateSwapCost(currentGas, ethPrice)}</span>
+                  <span className="text-gray-500 ml-1">(150k gas)</span>
+                </div>
+              )}
+
               {/* 1h Prediction Preview */}
               {next1h > 0 && currentGas > 0 && (
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm sm:text-base">
@@ -97,6 +114,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions }) =>
                   <span className={`font-semibold ${changePercent > 0 ? 'text-red-400' : changePercent < 0 ? 'text-green-400' : 'text-gray-300'}`}>
                     {next1h.toFixed(4)} Gwei
                   </span>
+                  <span className="text-gray-500">({calculateSwapCost(next1h, ethPrice)})</span>
                   <span className={`flex items-center gap-1 ${changePercent > 0 ? 'text-red-400' : changePercent < 0 ? 'text-green-400' : 'text-gray-400'}`}>
                     {changePercent > 0 && <TrendingUp className="w-4 h-4" />}
                     {changePercent < 0 && <TrendingDown className="w-4 h-4" />}
@@ -114,6 +132,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions }) =>
                 <div className="text-cyan-400 text-lg sm:text-xl font-bold">
                   {predictions?.['1h'] ? predictions['1h'].toFixed(4) : '---'} <span className="text-sm text-gray-500">Gwei</span>
                 </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {predictions?.['1h'] ? calculateSwapCost(predictions['1h'], ethPrice) : '---'}
+                </div>
               </div>
 
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/5">
@@ -121,12 +142,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({ currentGas, predictions }) =>
                 <div className="text-purple-400 text-lg sm:text-xl font-bold">
                   {predictions?.['4h'] ? predictions['4h'].toFixed(4) : '---'} <span className="text-sm text-gray-500">Gwei</span>
                 </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {predictions?.['4h'] ? calculateSwapCost(predictions['4h'], ethPrice) : '---'}
+                </div>
               </div>
 
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 hover:border-pink-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/5">
                 <div className="text-gray-400 text-xs sm:text-sm mb-1">24 Hours</div>
                 <div className="text-pink-400 text-lg sm:text-xl font-bold">
                   {predictions?.['24h'] ? predictions['24h'].toFixed(4) : '---'} <span className="text-sm text-gray-500">Gwei</span>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {predictions?.['24h'] ? calculateSwapCost(predictions['24h'], ethPrice) : '---'}
                 </div>
               </div>
             </div>

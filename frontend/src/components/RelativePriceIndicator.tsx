@@ -19,19 +19,21 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
 }) => {
   const [hourlyAverage, setHourlyAverage] = useState<number>(0);
   const [dayAverage, setDayAverage] = useState<number>(0);
+  const [weeklyAverage, setWeeklyAverage] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAverages = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://basegasfeesml.onrender.com/api'}/historical?hours=24`);
-        const data = await response.json();
+        // Fetch 24h data for hourly and daily averages
+        const dayResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://basegasfeesml.onrender.com/api'}/historical?hours=24`);
+        const dayData = await dayResponse.json();
 
-        if (data && data.historical && Array.isArray(data.historical) && data.historical.length > 0) {
+        if (dayData && dayData.historical && Array.isArray(dayData.historical) && dayData.historical.length > 0) {
           const currentHour = new Date().getUTCHours();
 
           // Calculate current hour average
-          const hourData = data.historical.filter((point: any) => {
+          const hourData = dayData.historical.filter((point: any) => {
             const timestamp = new Date(point.timestamp);
             return timestamp.getUTCHours() === currentHour;
           });
@@ -43,9 +45,24 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
           }
 
           // Calculate 24h average
-          const dayAvg = data.historical.reduce((sum: number, p: any) =>
-            sum + (p.gwei || p.current_gas || 0), 0) / data.historical.length;
+          const dayAvg = dayData.historical.reduce((sum: number, p: any) =>
+            sum + (p.gwei || p.current_gas || 0), 0) / dayData.historical.length;
           setDayAverage(dayAvg);
+        }
+
+        // Fetch 7-day data for weekly average
+        try {
+          const weekResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://basegasfeesml.onrender.com/api'}/historical?hours=168`);
+          const weekData = await weekResponse.json();
+
+          if (weekData && weekData.historical && Array.isArray(weekData.historical) && weekData.historical.length > 0) {
+            const weekAvg = weekData.historical.reduce((sum: number, p: any) =>
+              sum + (p.gwei || p.current_gas || 0), 0) / weekData.historical.length;
+            setWeeklyAverage(weekAvg);
+          }
+        } catch (weekErr) {
+          console.error('Failed to fetch weekly data:', weekErr);
+          // Weekly average is optional, continue without it
         }
       } catch (error) {
         console.error('Failed to fetch averages:', error);
@@ -216,6 +233,26 @@ const RelativePriceIndicator: React.FC<RelativePriceIndicatorProps> = ({
             <span className="text-sm sm:text-base font-mono text-gray-300">
               {dayAverage !== undefined && dayAverage !== null ? dayAverage.toFixed(4) : 'N/A'} gwei
             </span>
+          </div>
+        )}
+
+        {weeklyAverage > 0 && (
+          <div className="flex justify-between items-center p-2 bg-gray-700/50 rounded">
+            <span className="text-xs sm:text-sm text-gray-400">7-Day Average:</span>
+            <div className="text-right">
+              <span className="text-sm sm:text-base font-mono text-gray-300">
+                {weeklyAverage.toFixed(4)} gwei
+              </span>
+              {currentGas > 0 && weeklyAverage > 0 && (
+                <div className={`text-xs ${currentGas < weeklyAverage ? 'text-green-400' : currentGas > weeklyAverage ? 'text-red-400' : 'text-gray-400'}`}>
+                  {currentGas < weeklyAverage
+                    ? `${(((weeklyAverage - currentGas) / weeklyAverage) * 100).toFixed(0)}% below avg`
+                    : currentGas > weeklyAverage
+                    ? `${(((currentGas - weeklyAverage) / weeklyAverage) * 100).toFixed(0)}% above avg`
+                    : 'At average'}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
