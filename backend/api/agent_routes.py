@@ -6,6 +6,7 @@ Endpoints for transaction timing recommendations using the trained RL agent.
 
 from flask import Blueprint, jsonify, request
 from services.agent_service import get_agent_service
+from data.collector import BaseGasCollector
 from data.database import DatabaseManager
 from utils.logger import logger
 from api.cache import cached
@@ -14,6 +15,7 @@ import traceback
 
 agent_bp = Blueprint('agent', __name__)
 
+collector = BaseGasCollector()
 db = DatabaseManager()
 
 
@@ -53,14 +55,14 @@ def get_recommendation():
         urgency = max(0.0, min(1.0, urgency))  # Clamp to 0-1
 
         # Get current gas price
-        current_data = db.get_latest_gas_price()
+        current_data = collector.get_current_gas()
         if not current_data:
             return jsonify({
                 'success': False,
                 'error': 'No current gas data available'
             }), 503
 
-        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('current_gas', 0.01)
 
         # Get predictions
         predictions = _get_predictions()
@@ -123,14 +125,14 @@ def get_recommendation_simple():
         urgency = max(0.0, min(1.0, urgency))
 
         # Get current gas price
-        current_data = db.get_latest_gas_price()
+        current_data = collector.get_current_gas()
         if not current_data:
             return jsonify({
                 'success': False,
                 'error': 'No current gas data available'
             }), 503
 
-        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('current_gas', 0.01)
 
         # Get predictions
         predictions = _get_predictions()
@@ -349,11 +351,11 @@ def _get_predictions() -> dict:
         # Import here to avoid circular imports
         from api.routes import models, scalers, engineer
 
-        current_data = db.get_latest_gas_price()
+        current_data = collector.get_current_gas()
         if not current_data:
             return {'1h': 0.01, '4h': 0.01, '24h': 0.01}
 
-        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('current_gas', 0.01)
 
         # Try to get actual predictions
         historical = db.get_historical_data(hours=24)
@@ -401,6 +403,6 @@ def _get_predictions() -> dict:
 
     except Exception as e:
         logger.warning(f"Could not get predictions: {e}")
-        current_data = db.get_latest_gas_price()
-        current_gas = current_data.get('gwei', 0.01) if current_data else 0.01
+        current_data = collector.get_current_gas()
+        current_gas = current_data.get('current_gas', 0.01) if current_data else 0.01
         return {'1h': current_gas, '4h': current_gas, '24h': current_gas}
