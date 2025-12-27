@@ -60,7 +60,7 @@ def get_recommendation():
                 'error': 'No current gas data available'
             }), 503
 
-        current_gas = current_data.get('gwei') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
 
         # Get predictions
         predictions = _get_predictions()
@@ -71,7 +71,7 @@ def get_recommendation():
         # Update agent's statistics with recent data
         recent_prices = db.get_historical_data(hours=24)
         if recent_prices:
-            gas_prices = [r.get('gwei') or r.get('gas_price', 0.01) for r in recent_prices]
+            gas_prices = [r.get('gwei') or r.get('current_gas') or r.get('gas_price', 0.01) for r in recent_prices]
             agent.update_statistics(gas_prices)
 
         recommendation = agent.get_recommendation(
@@ -130,7 +130,7 @@ def get_recommendation_simple():
                 'error': 'No current gas data available'
             }), 503
 
-        current_gas = current_data.get('gwei') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
 
         # Get predictions
         predictions = _get_predictions()
@@ -304,7 +304,7 @@ def simulate_episode():
         final_action = None
 
         for i in range(num_steps):
-            gas_price = historical[i].get('gwei') or historical[i].get('gas_price', 0.01)
+            gas_price = historical[i].get('gwei') or historical[i].get('current_gas') or historical[i].get('gas_price', 0.01)
 
             recommendation = agent.get_recommendation(
                 current_gas=gas_price,
@@ -353,7 +353,7 @@ def _get_predictions() -> dict:
         if not current_data:
             return {'1h': 0.01, '4h': 0.01, '24h': 0.01}
 
-        current_gas = current_data.get('gwei') or current_data.get('gas_price', 0.01)
+        current_gas = current_data.get('gwei') or current_data.get('current_gas') or current_data.get('gas_price', 0.01)
 
         # Try to get actual predictions
         historical = db.get_historical_data(hours=24)
