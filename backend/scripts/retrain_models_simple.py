@@ -30,9 +30,15 @@ RF_PARAM_DISTRIBUTIONS = {
 }
 
 # Whether to use hyperparameter tuning (set False for faster training)
+# Note: Hyperparameter tuning is memory-intensive. On Railway (limited RAM),
+# we use conservative settings to avoid OOM kills.
+import os
+IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+
 USE_HYPERPARAMETER_TUNING = True
-TUNING_ITERATIONS = 15  # Number of random combinations to try
-CV_FOLDS = 3  # Cross-validation folds
+TUNING_ITERATIONS = 8 if IS_RAILWAY else 15  # Fewer iterations on Railway
+CV_FOLDS = 2 if IS_RAILWAY else 3  # Fewer folds on Railway
+N_JOBS_TUNING = 1 if IS_RAILWAY else -1  # Sequential on Railway to save memory
 
 
 def fetch_training_data(hours=720):
@@ -188,7 +194,7 @@ def train_model(X, y_tuple, horizon, min_samples=100):
             cv=tscv,
             scoring='neg_mean_absolute_error',
             random_state=42,
-            n_jobs=-1,
+            n_jobs=N_JOBS_TUNING,  # Use 1 on Railway to avoid OOM
             verbose=0
         )
 
@@ -323,6 +329,10 @@ def main():
     print("="*70)
     print("🎯 Simple Model Retraining")
     print("="*70)
+
+    if IS_RAILWAY:
+        print("🚂 Railway environment detected - using memory-efficient settings")
+        print(f"   Tuning iterations: {TUNING_ITERATIONS}, CV folds: {CV_FOLDS}, Jobs: {N_JOBS_TUNING}")
 
     try:
         # Step 1: Fetch data
