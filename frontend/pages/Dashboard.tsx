@@ -29,6 +29,7 @@ const GasAlertSettings = lazy(() => import('../src/components/GasAlertSettings')
 const TransactionCostCalculator = lazy(() => import('../src/components/TransactionCostCalculator'));
 const GasPatternHeatmap = lazy(() => import('../src/components/GasPatternHeatmap'));
 const TransactionQueue = lazy(() => import('../src/components/TransactionQueue'));
+const AgentRecommendation = lazy(() => import('../src/components/AgentRecommendation'));
 
 const Dashboard: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(
@@ -150,6 +151,11 @@ const Dashboard: React.FC = () => {
 
           <LazySection style={{ gridColumn: 'span 12 / span 8' }} rootMargin="150px">
             <BestTimeWidget currentGas={currentGas} />
+          </LazySection>
+
+          {/* AI Agent Recommendation */}
+          <LazySection style={{ gridColumn: 'span 12 / span 6' }} rootMargin="150px">
+            <AgentRecommendation currentGas={currentGas} />
           </LazySection>
 
           {/* Transaction Cost Calculator */}
